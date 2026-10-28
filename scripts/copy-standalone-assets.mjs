@@ -1,6 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+if (process.env.VERCEL) {
+  process.exit(0);
+}
+
 const root = process.cwd();
 const srcStatic = path.join(root, '.next', 'static');
 const destStatic = path.join(root, '.next', 'standalone', '.next', 'static');
