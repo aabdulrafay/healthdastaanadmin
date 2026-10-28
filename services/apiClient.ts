@@ -20,6 +20,42 @@ export class ApiError extends Error {
 let isRefreshing = false;
 let refreshQueue: Array<(token: string | null) => void> = [];
 
+async function parseResponseBody(response: Response): Promise<unknown> {
+  try {
+    if (typeof response.clone === 'function') {
+      try {
+        const cloned = response.clone();
+        if (typeof cloned.text === 'function') {
+          const raw = await cloned.text();
+          try {
+            return raw ? JSON.parse(raw) : null;
+          } catch {
+            return raw;
+          }
+        }
+      } catch {
+        // Fall back to direct read
+      }
+    }
+
+    if (typeof response.json === 'function') {
+      return await response.json();
+    }
+
+    if (typeof response.text === 'function') {
+      const raw = await response.text();
+      try {
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return raw;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 async function handleTokenRefresh(): Promise<string | null> {
   const refreshToken = storage.getRefreshToken();
   if (!refreshToken) {
@@ -46,9 +82,8 @@ async function handleTokenRefresh(): Promise<string | null> {
         body: JSON.stringify({ refreshToken }),
       });
     } catch (networkError) {
-      // Seamlessly fallback to same-origin proxy if browser CORS failed
       if (typeof window !== 'undefined') {
-        res = await fetch('/api/v1/auth/refresh', {
+        res = await fetch('/api/proxy/auth/refresh', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -60,13 +95,19 @@ async function handleTokenRefresh(): Promise<string | null> {
       }
     }
 
+    const parsed = (await parseResponseBody(res)) as Record<string, unknown> | null;
+    const data = parsed && typeof parsed === 'object' ? parsed : {};
+
     if (!res.ok) {
-      throw new Error('Refresh failed');
+      throw new Error(String(data.message || 'Refresh failed'));
     }
 
-    const data = await res.json();
-    const newAccessToken = data.tokens?.accessToken || data.accessToken;
-    const newRefreshToken = data.tokens?.refreshToken || data.refreshToken;
+    const tokens =
+      typeof data.tokens === 'object' && data.tokens !== null
+        ? (data.tokens as Record<string, string>)
+        : null;
+    const newAccessToken = (tokens?.accessToken || data.accessToken) as string | undefined;
+    const newRefreshToken = (tokens?.refreshToken || data.refreshToken) as string | undefined;
 
     if (newAccessToken) {
       storage.setAccessToken(newAccessToken);
@@ -120,9 +161,9 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
     try {
       response = await executeFetch(url);
     } catch (networkError) {
-      // If browser CORS blocked direct access ('Failed to fetch'), seamlessly fallback to internal Next.js proxy
-      if (typeof window !== 'undefined' && url.startsWith('http') && !url.includes('/api/v1')) {
-        const proxyUrl = `/api/v1${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+      // If direct cross-origin access failed in browser, retry via same-origin proxy
+      if (typeof window !== 'undefined' && url.startsWith('http') && !url.includes('/api/proxy')) {
+        const proxyUrl = `/api/proxy${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
         response = await executeFetch(proxyUrl);
       } else {
         throw networkError;
@@ -137,30 +178,37 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
         try {
           response = await executeFetch(url);
         } catch {
-          if (typeof window !== 'undefined' && url.startsWith('http') && !url.includes('/api/v1')) {
-            const proxyUrl = `/api/v1${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+          if (
+            typeof window !== 'undefined' &&
+            url.startsWith('http') &&
+            !url.includes('/api/proxy')
+          ) {
+            const proxyUrl = `/api/proxy${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
             response = await executeFetch(proxyUrl);
           }
         }
       }
     }
 
-    if (!response.ok) {
-      let errorData: unknown;
-      try {
-        errorData = await response.json();
-      } catch {
-        errorData = await response.text();
-      }
-      const message =
-        typeof errorData === 'object' && errorData !== null && 'message' in errorData
-          ? String((errorData as { message: unknown }).message)
-          : `HTTP ${response.status}: ${response.statusText}`;
+    const data = await parseResponseBody(response);
 
-      throw new ApiError(message, response.status, errorData);
+    if (!response.ok) {
+      let message = `HTTP ${response.status}: ${response.statusText}`;
+      if (typeof data === 'object' && data !== null) {
+        if ('message' in data) {
+          const msg = (data as { message: unknown }).message;
+          message = Array.isArray(msg) ? msg.join(', ') : String(msg);
+        } else if ('error' in data) {
+          message = String((data as { error: unknown }).error);
+        }
+      } else if (typeof data === 'string' && data.trim()) {
+        message = data;
+      }
+
+      throw new ApiError(message, response.status, data);
     }
 
-    return (await response.json()) as T;
+    return (data ?? {}) as T;
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(error instanceof Error ? error.message : 'Unknown Network Error', 0);

@@ -5,7 +5,7 @@ const BACKEND_BASE_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   'https://api.healthdastaan.com/v1';
 
-async function handler(req: NextRequest, context: { params: Promise<{ path: string[] }> }) {
+async function handleProxy(req: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
   const subPath = Array.isArray(path) ? path.join('/') : path;
   const search = req.nextUrl.search;
@@ -25,12 +25,12 @@ async function handler(req: NextRequest, context: { params: Promise<{ path: stri
     }
   });
 
-  let body: ArrayBuffer | undefined = undefined;
+  let body: string | undefined = undefined;
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     try {
-      body = await req.arrayBuffer();
+      body = await req.text();
     } catch {
-      // No body
+      // Empty body
     }
   }
 
@@ -41,7 +41,7 @@ async function handler(req: NextRequest, context: { params: Promise<{ path: stri
       body,
     });
 
-    const responseBody = await backendRes.arrayBuffer();
+    const responseText = await backendRes.text();
     const responseHeaders = new Headers();
 
     backendRes.headers.forEach((value, key) => {
@@ -59,7 +59,7 @@ async function handler(req: NextRequest, context: { params: Promise<{ path: stri
     responseHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
 
-    return new NextResponse(responseBody, {
+    return new NextResponse(responseText, {
       status: backendRes.status,
       statusText: backendRes.statusText,
       headers: responseHeaders,
@@ -77,9 +77,9 @@ async function handler(req: NextRequest, context: { params: Promise<{ path: stri
   }
 }
 
-export const GET = handler;
-export const POST = handler;
-export const PUT = handler;
-export const PATCH = handler;
-export const DELETE = handler;
-export const OPTIONS = handler;
+export const GET = handleProxy;
+export const POST = handleProxy;
+export const PUT = handleProxy;
+export const PATCH = handleProxy;
+export const DELETE = handleProxy;
+export const OPTIONS = handleProxy;
