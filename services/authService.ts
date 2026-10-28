@@ -74,11 +74,16 @@ export const authService = {
               : emailLower;
 
         const name =
-          typeof result.user.fullName === 'string'
-            ? result.user.fullName
+          typeof result.user.fullName === 'string' && result.user.fullName.trim()
+            ? result.user.fullName.trim()
             : result.user.givenName
               ? `${result.user.givenName} ${result.user.familyName || ''}`.trim()
-              : email;
+              : primaryRole === 'super_admin'
+                ? 'Super Administrator'
+                : email
+                    .split('@')[0]
+                    .replace(/[._]/g, ' ')
+                    .replace(/\b\w/g, (l) => l.toUpperCase());
 
         const adminUser: AdminUser = {
           id: result.user.id,
@@ -86,7 +91,7 @@ export const authService = {
           email,
           role: primaryRole,
           additionalRoles,
-          department: result.user.department || 'Clinical Operations',
+          department: result.user.department || 'Platform Administration',
           createdAt: result.user.createdAt || new Date().toISOString(),
           lastLoginAt: new Date().toISOString(),
           mustChangePassword: Boolean(result.user.mustChangePassword),

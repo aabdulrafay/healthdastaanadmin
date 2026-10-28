@@ -4,10 +4,10 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow static assets, health check, login page, and Next.js internals
+  // Allow static assets, API routes (proxy, health), login page, and Next.js internals
   if (
     pathname.startsWith('/login') ||
-    pathname.startsWith('/api/health') ||
+    pathname.startsWith('/api') ||
     pathname.startsWith('/_next') ||
     pathname.includes('.') ||
     pathname === '/favicon.ico'
@@ -27,5 +27,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api/health|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

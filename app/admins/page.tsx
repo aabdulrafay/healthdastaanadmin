@@ -66,10 +66,37 @@ export default function AdminManagementPage() {
     fetchAdmins();
   }, [fetchAdmins]);
 
+  const generateSecurePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%^&*';
+    let res = 'Admin@2026';
+    for (let i = 0; i < 4; i++) {
+      res += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewAdminForm((prev) => ({ ...prev, temporaryPassword: res }));
+  };
+
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAdminForm.name.trim() || !newAdminForm.email.trim()) {
       toastError('Required Fields', 'Please complete the admin name and work email.');
+      return;
+    }
+
+    const pwd = (newAdminForm.temporaryPassword || '').trim();
+    if (!pwd) {
+      toastError('Required Fields', 'Please enter or generate a temporary password.');
+      return;
+    }
+
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasLower = /[a-z]/.test(pwd);
+    const hasDigit = /[0-9]/.test(pwd);
+    const hasSpecial = /[^A-Za-z0-9]/.test(pwd);
+    if (pwd.length < 8 || !hasUpper || !hasLower || !hasDigit || !hasSpecial) {
+      toastError(
+        'Weak Password',
+        'Password must be at least 8 characters long and contain uppercase, lowercase, a number, and a special character (e.g. AdminSecure2026!).'
+      );
       return;
     }
 
@@ -117,8 +144,9 @@ export default function AdminManagementPage() {
         privileges: ['VIEW_USERS', 'SUSPEND_USERS'],
         phoneNumber: '',
       });
-    } catch {
-      toastError('Creation Failed', 'Could not create new administrator');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Could not create new administrator';
+      toastError('Creation Failed', msg);
     } finally {
       setIsSubmittingCreate(false);
     }
@@ -432,15 +460,29 @@ export default function AdminManagementPage() {
                 />
               </div>
 
-              <Input
-                label="Temporary One-Time Password"
-                value={newAdminForm.temporaryPassword}
-                onChange={(e) =>
-                  setNewAdminForm({ ...newAdminForm, temporaryPassword: e.target.value })
-                }
-                helperText="Officer will be forced to rotate password on initial login."
-                required
-              />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-[#002654]">
+                    Temporary One-Time Password <span className="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={generateSecurePassword}
+                    className="text-xs font-bold text-[#006b5f] hover:underline"
+                  >
+                    Auto-generate
+                  </button>
+                </div>
+                <Input
+                  value={newAdminForm.temporaryPassword}
+                  placeholder="e.g. AdminSecure2026!"
+                  onChange={(e) =>
+                    setNewAdminForm({ ...newAdminForm, temporaryPassword: e.target.value })
+                  }
+                  helperText="Must be 8+ chars with uppercase, lowercase, number, and symbol."
+                  required
+                />
+              </div>
             </form>
           </Modal>
 

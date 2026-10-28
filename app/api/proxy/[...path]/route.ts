@@ -1,15 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_BASE_URL =
-  process.env.INTERNAL_API_BASE_URL ||
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  'https://api.healthdastaan.com/v1';
+function getTargetUrl(subPath: string, search: string): string {
+  const internal = process.env.INTERNAL_API_BASE_URL;
+  const baseUrl =
+    internal && !internal.includes('backend:3000') && !internal.includes('localhost:3000')
+      ? internal
+      : process.env.NEXT_PUBLIC_API_BASE_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        process.env.NEXT_PUBLIC_BACKEND_URL ||
+        'https://api.healthdastaan.com/v1';
+
+  return `${baseUrl.replace(/\/$/, '')}/${subPath}${search}`;
+}
 
 async function handleProxy(req: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
   const subPath = Array.isArray(path) ? path.join('/') : path;
   const search = req.nextUrl.search;
-  const targetUrl = `${BACKEND_BASE_URL.replace(/\/$/, '')}/${subPath}${search}`;
+  const targetUrl = getTargetUrl(subPath, search);
 
   const forwardHeaders = new Headers();
   req.headers.forEach((value, key) => {
@@ -35,11 +43,25 @@ async function handleProxy(req: NextRequest, context: { params: Promise<{ path: 
   }
 
   try {
-    const backendRes = await fetch(targetUrl, {
-      method: req.method,
-      headers: forwardHeaders,
-      body,
-    });
+    let backendRes: Response;
+    try {
+      backendRes = await fetch(targetUrl, {
+        method: req.method,
+        headers: forwardHeaders,
+        body,
+      });
+    } catch (networkError) {
+      if (!targetUrl.startsWith('https://api.healthdastaan.com/v1')) {
+        const fallbackUrl = `https://api.healthdastaan.com/v1/${subPath}${search}`;
+        backendRes = await fetch(fallbackUrl, {
+          method: req.method,
+          headers: forwardHeaders,
+          body,
+        });
+      } else {
+        throw networkError;
+      }
+    }
 
     const responseText = await backendRes.text();
     const responseHeaders = new Headers();

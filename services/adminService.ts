@@ -15,22 +15,33 @@ interface RawBackendAdmin {
   createdAt?: string;
   phoneNumber?: string;
   phone?: string;
+  adminProfile?: {
+    id?: string;
+    roles?: string[];
+    isSuperAdmin?: boolean;
+    department?: string;
+  };
 }
 
 function normalizeAdmin(raw: RawBackendAdmin): AdminAccount {
-  const primaryRole =
-    raw.roles && raw.roles.length > 0
-      ? (raw.roles[0] as AdminAccount['role'])
-      : raw.role
-        ? (raw.role as AdminAccount['role'])
-        : raw.isSuperAdmin
-          ? 'super_admin'
-          : 'support_admin';
+  const profile = raw.adminProfile;
+  const roles =
+    profile?.roles && profile.roles.length > 0
+      ? profile.roles
+      : raw.roles && raw.roles.length > 0
+        ? raw.roles
+        : raw.role
+          ? [raw.role]
+          : [];
 
-  const additionalRoles =
-    raw.roles && raw.roles.length > 1
-      ? (raw.roles.slice(1) as AdminAccount['role'][])
-      : (raw.additionalRoles as AdminAccount['role'][]) || [];
+  const isSuper = profile?.isSuperAdmin ?? raw.isSuperAdmin ?? roles.includes('super_admin');
+
+  const primaryRole = (roles.find((r) => r !== 'admin') ||
+    (isSuper ? 'super_admin' : 'support_admin')) as AdminAccount['role'];
+
+  const additionalRoles = roles.filter(
+    (r) => r !== primaryRole && r !== 'admin'
+  ) as AdminAccount['role'][];
 
   return {
     id: raw.id,
@@ -38,9 +49,9 @@ function normalizeAdmin(raw: RawBackendAdmin): AdminAccount {
     email: raw.email,
     role: primaryRole,
     additionalRoles,
-    department: raw.department || 'Governance',
+    department: profile?.department || raw.department || 'Governance',
     status: raw.status || 'active',
-    privileges: raw.roles || [primaryRole, ...additionalRoles],
+    privileges: roles.length > 0 ? roles : [primaryRole, ...additionalRoles],
     createdAt: raw.createdAt || new Date().toISOString(),
     phoneNumber: raw.phone || raw.phoneNumber,
   };
@@ -50,17 +61,24 @@ export const adminService = {
   async getAdmins(): Promise<AdminAccount[]> {
     try {
       const res = await apiClient<
-        RawBackendAdmin[] | { admins?: RawBackendAdmin[]; items?: RawBackendAdmin[] }
+        | RawBackendAdmin[]
+        | { admins?: RawBackendAdmin[]; items?: RawBackendAdmin[] }
+        | RawBackendAdmin
       >('/admin/admins');
 
       if (Array.isArray(res)) {
         return res.map(normalizeAdmin);
       }
-      if (res && Array.isArray(res.admins)) {
-        return res.admins.map(normalizeAdmin);
-      }
-      if (res && Array.isArray(res.items)) {
-        return res.items.map(normalizeAdmin);
+      if (res && typeof res === 'object') {
+        if ('admins' in res && Array.isArray(res.admins)) {
+          return res.admins.map(normalizeAdmin);
+        }
+        if ('items' in res && Array.isArray(res.items)) {
+          return res.items.map(normalizeAdmin);
+        }
+        if ('id' in res) {
+          return [normalizeAdmin(res as RawBackendAdmin)];
+        }
       }
       return [];
     } catch {
@@ -77,17 +95,22 @@ export const adminService = {
         ? [payload.role, ...payload.additionalRoles]
         : [payload.role];
 
+    const bodyPayload: Record<string, unknown> = {
+      email: payload.email.trim().toLowerCase(),
+      password: payload.temporaryPassword,
+      fullName: payload.name.trim(),
+      roles,
+      isSuperAdmin: payload.role === 'super_admin' || roles.includes('super_admin'),
+      department: payload.department.trim(),
+    };
+
+    if (payload.phoneNumber && payload.phoneNumber.trim()) {
+      bodyPayload.phone = payload.phoneNumber.trim();
+    }
+
     const res = await apiClient<RawBackendAdmin | { admin?: RawBackendAdmin }>('/admin/admins', {
       method: 'POST',
-      body: JSON.stringify({
-        email: payload.email,
-        password: payload.temporaryPassword,
-        fullName: payload.name,
-        roles,
-        isSuperAdmin: payload.role === 'super_admin' || roles.includes('super_admin'),
-        department: payload.department,
-        phone: payload.phoneNumber,
-      }),
+      body: JSON.stringify(bodyPayload),
     });
 
     const raw = 'admin' in res && res.admin ? res.admin : (res as RawBackendAdmin);
