@@ -1,0 +1,11 @@
+node_modules
+.next
+build
+dist
+out
+coverage
+test-results
+playwright-report
+blob-report
+package-lock.json
+.git
