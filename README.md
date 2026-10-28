@@ -84,14 +84,14 @@ cp .env.example .env.local
 
 ### Configuration Parameters
 
-| Variable | Description | Default / Example |
-| :--- | :--- | :--- |
-| `NEXT_PUBLIC_API_BASE_URL` | Public browser-facing backend API endpoint | `https://api.healthdastaan.com/v1` |
-| `NEXT_PUBLIC_API_URL` | Backward-compatibility alias for API base URL | `https://api.healthdastaan.com/v1` |
-| `INTERNAL_API_BASE_URL` | Server-to-server internal Docker network URL | `http://backend:3000/v1` |
-| `PORT` | Container internal listening port | `3000` |
-| `HOST_PORT` | Local host port mapped to container port | `3001` |
-| `NODE_ENV` | Application runtime environment | `development` or `production` |
+| Variable                   | Description                                   | Default / Example                  |
+| :------------------------- | :-------------------------------------------- | :--------------------------------- |
+| `NEXT_PUBLIC_API_BASE_URL` | Public browser-facing backend API endpoint    | `https://api.healthdastaan.com/v1` |
+| `NEXT_PUBLIC_API_URL`      | Backward-compatibility alias for API base URL | `https://api.healthdastaan.com/v1` |
+| `INTERNAL_API_BASE_URL`    | Server-to-server internal Docker network URL  | `http://backend:3000/v1`           |
+| `PORT`                     | Container internal listening port             | `3000`                             |
+| `HOST_PORT`                | Local host port mapped to container port      | `3001`                             |
+| `NODE_ENV`                 | Application runtime environment               | `development` or `production`      |
 
 > **Security Note:** Variables prefixed with `NEXT_PUBLIC_*` are inlined into JavaScript bundles during build time. Never place secrets, database passwords, or private API keys in `NEXT_PUBLIC_*` variables.
 
@@ -170,6 +170,7 @@ npm run test:e2e
 ## 8. Running with Docker
 
 ### Step 1: Create Shared Docker Network
+
 The admin container expects an external bridge network `healthdastaan-net` to connect to the backend:
 
 ```bash
@@ -177,6 +178,7 @@ docker network create healthdastaan-net || true
 ```
 
 ### Step 2: Production Container
+
 Run using `docker-compose.yml`:
 
 ```bash
@@ -194,9 +196,11 @@ docker compose logs -f
 # Shut down container
 npm run docker:down
 ```
+
 The application will be accessible at `http://localhost:3001`.
 
 ### Step 3: Development Container (with Hot Reload)
+
 Run using `docker-compose.dev.yml`:
 
 ```bash
@@ -208,15 +212,20 @@ docker compose -f docker-compose.dev.yml up
 ## 9. Backend Integration & Networking
 
 The Admin Portal connects to a separate NestJS backend API:
+
 1. **Client-Side Requests:** Browser JavaScript makes requests directly to `NEXT_PUBLIC_API_BASE_URL` (e.g. `https://api.healthdastaan.com/v1`).
 2. **Server-Side Requests:** When executing inside Docker, server-rendered components or proxy calls use `INTERNAL_API_BASE_URL` (e.g. `http://backend:3000/v1`).
 
 ### Health Endpoint
+
 The admin portal exposes a lightweight health check at:
+
 ```http
 GET /api/health
 ```
+
 Response:
+
 ```json
 {
   "status": "ok",
@@ -231,21 +240,27 @@ Response:
 ## 10. Troubleshooting Common Issues
 
 ### 1. `docker compose up` fails with "network healthdastaan-net not found"
+
 Create the external Docker network before launching:
+
 ```bash
 docker network create healthdastaan-net
 ```
 
 ### 2. Port Conflict on 3001
+
 If port 3001 is occupied on your host machine, override `HOST_PORT` in `.env`:
+
 ```bash
 HOST_PORT=3005 docker compose up -d
 ```
 
 ### 3. Middleware redirects immediately to `/login`
+
 Ensure that the `hd_admin_token` cookie is set upon authentication, or log in using valid development administrator credentials from the login quick-fill panel.
 
 ### 4. Standalone output missing static assets in manual runs
+
 If running `node .next/standalone/server.js` outside Docker, ensure `npm run build` was executed (which runs `scripts/copy-standalone-assets.mjs` to synchronize `.next/static` and `public`).
 
 ---

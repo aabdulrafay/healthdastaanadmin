@@ -52,11 +52,13 @@ The HealthDastaan Admin Portal is containerized as a lightweight, non-root Node.
 The admin container connects to the backend through a shared external bridge network named `healthdastaan-net`. This isolates inter-service traffic from the public network.
 
 ### Create Network (if not already existing)
+
 ```bash
 docker network create --driver bridge healthdastaan-net
 ```
 
 ### Verify Network
+
 ```bash
 docker network inspect healthdastaan-net
 ```
@@ -95,6 +97,7 @@ NEXT_TELEMETRY_DISABLED=1
 ## 5. Building and Running with Docker Compose
 
 ### Step 1: Clone Repository
+
 ```bash
 git clone https://github.com/aabdulrafay/healthdastaanadmin.git /opt/healthdastaan/admin
 cd /opt/healthdastaan/admin
@@ -102,22 +105,27 @@ git checkout main
 ```
 
 ### Step 2: Build the Production Container
+
 ```bash
 docker compose build --build-arg NEXT_PUBLIC_API_BASE_URL=https://api.healthdastaan.com/v1
 ```
 
 ### Step 3: Launch Service in Detached Mode
+
 ```bash
 docker compose up -d
 ```
 
 ### Step 4: Verify Container Status & Health Check
+
 ```bash
 docker ps -f name=healthdastaan-admin
 ```
+
 Expected status: `Up X minutes (healthy)`.
 
 ### Step 5: Test Endpoint
+
 ```bash
 curl -I http://localhost:3001/api/health
 # HTTP/1.1 200 OK
@@ -208,6 +216,7 @@ server {
 ```
 
 ### Enable Site and Obtain Certificate
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/admin.healthdastaan.com.conf /etc/nginx/sites-enabled/
 sudo nginx -t
@@ -235,17 +244,20 @@ For staging or pre-production validation:
 ## 8. Monitoring, Logs & Maintenance Runbook
 
 ### Inspect Container Logs
+
 ```bash
 # View last 100 log lines with timestamp
 docker logs --tail 100 -f healthdastaan-admin
 ```
 
 ### Restart Application
+
 ```bash
 docker compose restart healthdastaan-admin
 ```
 
 ### Zero-Downtime Rolling Update Procedure
+
 ```bash
 cd /opt/healthdastaan/admin
 git pull origin main
@@ -254,12 +266,15 @@ docker compose up -d --no-deps healthdastaan-admin
 ```
 
 ### Check Container Resource Utilization
+
 ```bash
 docker stats healthdastaan-admin --no-stream
 ```
 
 ### Healthcheck Failure Recovery
+
 If the container reports `unhealthy`:
+
 1. Check internal health endpoint: `docker exec healthdastaan-admin wget -qO- http://localhost:3000/api/health`
 2. Inspect server logs for memory exhaustion or uncaught exceptions: `docker logs --tail 50 healthdastaan-admin`
 3. Verify backend connectivity from inside the container:

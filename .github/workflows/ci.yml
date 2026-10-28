@@ -3,13 +3,10 @@ name: HealthDastaan Admin CI
 on:
   push:
     branches:
-      - main
-      - 'chore/**'
-      - 'feature/**'
-      - 'fix/**'
+      - '**'
   pull_request:
     branches:
-      - main
+      - '**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -60,7 +57,8 @@ jobs:
         env:
           CI: true
           PORT: 3000
-          PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
+          HOSTNAME: 0.0.0.0
+          PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:3000
 
       - name: Upload Playwright Test Results
         if: failure()
