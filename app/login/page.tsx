@@ -6,8 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Activity, Lock, Mail, Eye, EyeOff, ShieldAlert, Sparkles } from 'lucide-react';
-import { DEFAULT_SUPERADMIN } from '@/lib/constants';
+import { Activity, Lock, Mail, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -38,10 +37,7 @@ export default function LoginPage() {
 
     try {
       const user = await login({ email, password, rememberMe });
-      success(
-        `Welcome, ${user.name}`,
-        `Authenticated under administrative role: ${user.role.replace('_', ' ').toUpperCase()}`
-      );
+      success(`Welcome, ${user.name}`, 'You have successfully signed in.');
       router.push('/');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Authentication failed';
@@ -55,52 +51,48 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickFill = (targetEmail: string, targetPass?: string) => {
-    setEmail(targetEmail);
-    setPassword(targetPass || 'admin123');
-    setErrorMessage('');
-    setIsAccessDenied(false);
-  };
-
   return (
-    <div className="min-h-screen bg-[#F7F9FF] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Decorative Oceanic Gradients */}
-      <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-[#00A896]/10 blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-[#f7f9ff] flex flex-col justify-between py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden select-none">
+      {/* Background Subtle Oceanic & Leaf Accents */}
+      <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-[#00a896]/10 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-[#002654]/10 blur-3xl pointer-events-none" />
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">
+      {/* Main Administrative Sign-In Card Container */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 my-auto">
         {/* Brand Header */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#002654] via-[#0B3C78] to-[#00A896] shadow-xl shadow-[#002654]/25 p-3.5 mb-1">
+        <div className="text-center space-y-3 mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#002654] via-[#0b3c78] to-[#00a896] shadow-lg shadow-[#002654]/15 p-3">
             <Activity className="w-full h-full text-white" />
           </div>
+
           <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#002654] tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#002654] tracking-tight">
               HealthDastaan
-            </h2>
-            <div className="inline-flex items-center gap-1.5 mt-1 px-3 py-0.5 rounded-full bg-[#002654]/10 border border-[#002654]/15">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00A896]" />
-              <span className="text-xs font-bold uppercase tracking-wider text-[#002654]">
+            </h1>
+            <div className="inline-flex items-center gap-2 mt-2 px-3.5 py-1 rounded-full bg-[#edf4ff] border border-[#002654]/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00875a]" />
+              <span className="text-xs font-semibold text-[#002654] tracking-wide">
                 Clinical Administration Portal
               </span>
             </div>
           </div>
-          <p className="text-xs text-[#434750] max-w-xs mx-auto">
-            Authorized healthcare governance, doctor credentialing, and infrastructure control
+
+          <p className="text-sm text-[#434750] max-w-sm mx-auto leading-relaxed">
+            Authorized healthcare operations and platform governance console.
           </p>
         </div>
 
-        {/* Login Card Surface */}
-        <div className="mt-8 bg-white py-8 px-6 sm:px-10 shadow-[0_8px_30px_rgb(11,60,120,0.08)] rounded-2xl border border-slate-200/90 relative">
-          {/* Top 4px oceanic gradient accent */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-2xl bg-gradient-to-r from-[#002654] via-[#00A896] to-[#0ED2B0]" />
+        {/* Card Surface */}
+        <div className="bg-white py-8 px-6 sm:px-10 rounded-2xl border border-[rgba(11,60,120,0.08)] shadow-[0_2px_8px_-2px_rgba(11,60,120,0.05),0_8px_24px_-4px_rgba(11,60,120,0.08)] relative">
+          {/* Top Tri-Color Clinical Gradient Line */}
+          <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-2xl bg-gradient-to-r from-[#0b3c78] via-[#00a896] to-[#00875a]" />
 
           {/* Access Denied Warning Alert */}
           {isAccessDenied && (
             <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-900 flex items-start gap-3">
-              <ShieldAlert className="w-5 h-5 text-[#BA1A1A] shrink-0 mt-0.5" />
+              <ShieldAlert className="w-5 h-5 text-[#ba1a1a] shrink-0 mt-0.5" />
               <div className="text-xs">
-                <p className="font-bold text-[#BA1A1A]">Access Denied</p>
+                <p className="font-bold text-[#ba1a1a]">Access Denied</p>
                 <p className="mt-0.5 text-red-700 leading-relaxed">{errorMessage}</p>
               </div>
             </div>
@@ -108,7 +100,7 @@ export default function LoginPage() {
 
           {/* Generic Error Alert */}
           {errorMessage && !isAccessDenied && (
-            <div className="mb-6 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-[#BA1A1A] font-medium flex items-center gap-2">
+            <div className="mb-6 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-[#ba1a1a] font-medium flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -127,7 +119,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. superadmin@healthdastaan.com"
+              placeholder="admin@healthdastaan.com"
               leftIcon={<Mail className="w-4 h-4" />}
               autoComplete="email"
               required
@@ -160,13 +152,16 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded text-[#002654] focus:ring-[#00A896] w-4 h-4"
+                  className="rounded text-[#002654] focus:ring-[#00a896] w-4 h-4 border-slate-300"
                 />
-                <span>Remember this terminal session</span>
+                <span>Remember me</span>
               </label>
-              <span className="text-[#006B5F] hover:underline cursor-pointer font-medium">
-                Hardware Token / 2FA Help
-              </span>
+              <a
+                href="mailto:support@healthdastaan.com"
+                className="text-[#006b5f] hover:underline font-semibold"
+              >
+                Need help?
+              </a>
             </div>
 
             <Button
@@ -183,98 +178,29 @@ export default function LoginPage() {
               Sign In to Console
             </Button>
           </form>
-
-          {/* Quick-fill Dev Credentials Box */}
-          <div className="mt-8 pt-6 border-t border-slate-100 space-y-3">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#002654]">
-              <Sparkles className="w-4 h-4 text-[#00A896]" />
-              <span>Development Role Quick-Fill:</span>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 text-xs">
-              {/* Default Super Admin */}
-              <button
-                type="button"
-                onClick={() =>
-                  handleQuickFill(DEFAULT_SUPERADMIN.email, DEFAULT_SUPERADMIN.password)
-                }
-                className="w-full text-left p-2.5 rounded-lg border border-slate-200 hover:border-[#002654] hover:bg-[#EDF4FF] transition-all flex items-center justify-between group"
-              >
-                <div>
-                  <p className="font-semibold text-[#002654]">👑 Super Admin (Full Governance)</p>
-                  <p className="text-[11px] text-slate-500 font-mono">{DEFAULT_SUPERADMIN.email}</p>
-                </div>
-                <span className="text-[10px] font-bold text-[#00A896] group-hover:underline">
-                  Fill
-                </span>
-              </button>
-
-              {/* Verification Admin */}
-              <button
-                type="button"
-                onClick={() =>
-                  handleQuickFill('shahzad.verification@healthdastaan.com', 'admin123')
-                }
-                className="w-full text-left p-2 rounded-lg border border-slate-200 hover:border-[#00A896] hover:bg-slate-50 transition-all flex items-center justify-between group"
-              >
-                <div>
-                  <p className="font-semibold text-[#121D27]">
-                    🩺 Verification Admin (Doctor Credentials)
-                  </p>
-                  <p className="text-[11px] text-slate-500 font-mono">
-                    shahzad.verification@healthdastaan.com
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold text-[#00A896] group-hover:underline">
-                  Fill
-                </span>
-              </button>
-
-              {/* Support Admin */}
-              <button
-                type="button"
-                onClick={() => handleQuickFill('sarah.support@healthdastaan.com', 'admin123')}
-                className="w-full text-left p-2 rounded-lg border border-slate-200 hover:border-[#00A896] hover:bg-slate-50 transition-all flex items-center justify-between group"
-              >
-                <div>
-                  <p className="font-semibold text-[#121D27]">
-                    👥 Support Admin (User Management & Sessions)
-                  </p>
-                  <p className="text-[11px] text-slate-500 font-mono">
-                    sarah.support@healthdastaan.com
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold text-[#00A896] group-hover:underline">
-                  Fill
-                </span>
-              </button>
-
-              {/* Regular Patient / Non-Admin (Tests Access Denied) */}
-              <button
-                type="button"
-                onClick={() => handleQuickFill('sana.tariq@gmail.com', 'patientPass')}
-                className="w-full text-left p-2 rounded-lg border border-red-200 bg-red-50/50 hover:bg-red-50 transition-all flex items-center justify-between group"
-              >
-                <div>
-                  <p className="font-semibold text-red-800">🚫 Regular Patient Account</p>
-                  <p className="text-[11px] text-red-600 font-mono">
-                    sana.tariq@gmail.com (Test Access Denied)
-                  </p>
-                </div>
-                <span className="text-[10px] font-bold text-red-700 group-hover:underline">
-                  Test
-                </span>
-              </button>
-            </div>
-          </div>
         </div>
-
-        {/* Security Policy Footer */}
-        <p className="mt-6 text-center text-xs text-[#737781]">
-          Protected by enterprise-grade TLS 1.3 & role-based access control. All administrative
-          actions are permanently recorded in system audit logs.
-        </p>
       </div>
+
+      {/* Modern Professional Footer */}
+      <footer className="relative z-10 w-full py-6 text-center">
+        <div className="max-w-md mx-auto space-y-2">
+          <div className="flex items-center justify-center gap-4 text-xs font-medium text-[#434750]">
+            <a
+              href="mailto:support@healthdastaan.com"
+              className="hover:text-[#002654] transition-colors"
+            >
+              Support
+            </a>
+            <span className="text-[#c3c6d1]">•</span>
+            <span className="hover:text-[#002654] transition-colors cursor-pointer">Privacy</span>
+            <span className="text-[#c3c6d1]">•</span>
+            <span className="hover:text-[#002654] transition-colors cursor-pointer">Security</span>
+          </div>
+          <p className="text-xs text-[#737781] tracking-wide font-normal">
+            © 2026 HealthDastaan. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

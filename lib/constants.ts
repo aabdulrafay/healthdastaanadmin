@@ -9,7 +9,6 @@ export const INTERNAL_API_BASE_URL = process.env.INTERNAL_API_BASE_URL || API_BA
 
 export const DEFAULT_SUPERADMIN = {
   email: 'superadmin@healthdastaan.com',
-  password: 'ChangeMe@HealthDastaan2026!',
   name: 'HealthDastaan Super Admin',
   role: 'super_admin' as AdminRole,
 };

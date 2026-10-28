@@ -11,7 +11,7 @@ describe('authService', () => {
   it('authenticates Super Admin in fallback/dev mode with valid credentials', async () => {
     const res = await authService.login({
       email: DEFAULT_SUPERADMIN.email,
-      password: DEFAULT_SUPERADMIN.password,
+      password: 'mockTestPassword123!',
     });
 
     expect(res.user).toBeDefined();

@@ -1,8 +1,5 @@
 import { FeatureFlag, FlagCategory, ToggleFlagPayload } from '@/types/featureFlag';
-import { INITIAL_FEATURE_FLAGS } from '@/lib/mockData';
 import { apiClient } from './apiClient';
-
-const flagsCache: FeatureFlag[] = [...INITIAL_FEATURE_FLAGS];
 
 interface RawBackendFeatureFlag {
   id?: string;
@@ -72,46 +69,25 @@ export const featureFlagService = {
       if (res && Array.isArray(res.items)) {
         return res.items.map(normalizeFeatureFlag);
       }
-      return [...flagsCache];
+      return [];
     } catch {
-      return [...flagsCache];
+      return [];
     }
   },
 
   async toggleFeatureFlag(payload: ToggleFlagPayload): Promise<FeatureFlag> {
-    try {
-      const res = await apiClient<RawBackendFeatureFlag | { flag?: RawBackendFeatureFlag }>(
-        `/admin/feature-flags/${encodeURIComponent(payload.flagKey)}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({
-            isEnabled: payload.isEnabled,
-            reason: payload.reason || 'Admin console update',
-          }),
-        }
-      );
+    const res = await apiClient<RawBackendFeatureFlag | { flag?: RawBackendFeatureFlag }>(
+      `/admin/feature-flags/${encodeURIComponent(payload.flagKey)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({
+          isEnabled: payload.isEnabled,
+          reason: payload.reason || 'Admin console update',
+        }),
+      }
+    );
 
-      const raw = 'flag' in res && res.flag ? res.flag : (res as RawBackendFeatureFlag);
-      return normalizeFeatureFlag(raw);
-    } catch {
-      const index = flagsCache.findIndex((f) => f.key === payload.flagKey);
-      if (index === -1) throw new Error('Feature flag not found');
-
-      const updated: FeatureFlag = {
-        ...flagsCache[index],
-        isEnabled: payload.isEnabled,
-        disabledReason: payload.isEnabled ? undefined : payload.reason,
-        lastToggledAt: new Date().toISOString(),
-        lastToggledBy: {
-          id: payload.adminId,
-          name: payload.adminName,
-          email: payload.adminName.toLowerCase().replace(/\s+/g, '.') + '@healthdastaan.com',
-          role: 'admin',
-        },
-      };
-
-      flagsCache[index] = updated;
-      return updated;
-    }
+    const raw = 'flag' in res && res.flag ? res.flag : (res as RawBackendFeatureFlag);
+    return normalizeFeatureFlag(raw);
   },
 };

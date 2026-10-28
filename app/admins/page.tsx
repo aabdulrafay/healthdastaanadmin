@@ -30,7 +30,7 @@ export default function AdminManagementPage() {
   const [newAdminForm, setNewAdminForm] = useState<CreateAdminPayload>({
     name: '',
     email: '',
-    temporaryPassword: 'Temp@HealthDastaan2026!',
+    temporaryPassword: '',
     role: 'support_admin',
     department: 'Clinical Operations Support',
     privileges: ['VIEW_USERS', 'SUSPEND_USERS'],
@@ -111,7 +111,7 @@ export default function AdminManagementPage() {
       setNewAdminForm({
         name: '',
         email: '',
-        temporaryPassword: 'Temp@HealthDastaan2026!',
+        temporaryPassword: '',
         role: 'support_admin',
         department: 'Clinical Operations Support',
         privileges: ['VIEW_USERS', 'SUSPEND_USERS'],

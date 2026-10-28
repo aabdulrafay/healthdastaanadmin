@@ -1,8 +1,5 @@
 import { AdminAccount, CreateAdminPayload, UpdateAdminPayload } from '@/types/admin';
-import { INITIAL_ADMINS } from '@/lib/mockData';
 import { apiClient } from './apiClient';
-
-const adminsCache: AdminAccount[] = [...INITIAL_ADMINS];
 
 interface RawBackendAdmin {
   id: string;
@@ -65,103 +62,64 @@ export const adminService = {
       if (res && Array.isArray(res.items)) {
         return res.items.map(normalizeAdmin);
       }
-      return [...adminsCache];
+      return [];
     } catch {
-      return [...adminsCache];
+      return [];
     }
   },
 
   async createAdmin(
     payload: CreateAdminPayload,
-    creatorName = 'Super Admin'
+    _creatorName = 'Super Admin'
   ): Promise<AdminAccount> {
-    try {
-      const roles =
-        payload.additionalRoles && payload.additionalRoles.length > 0
-          ? [payload.role, ...payload.additionalRoles]
-          : [payload.role];
+    const roles =
+      payload.additionalRoles && payload.additionalRoles.length > 0
+        ? [payload.role, ...payload.additionalRoles]
+        : [payload.role];
 
-      const res = await apiClient<RawBackendAdmin | { admin?: RawBackendAdmin }>('/admin/admins', {
-        method: 'POST',
-        body: JSON.stringify({
-          email: payload.email,
-          password: 'Password123!',
-          fullName: payload.name,
-          roles,
-          isSuperAdmin: payload.role === 'super_admin' || roles.includes('super_admin'),
-          department: payload.department,
-          phone: payload.phoneNumber,
-        }),
-      });
-
-      const raw = 'admin' in res && res.admin ? res.admin : (res as RawBackendAdmin);
-      return normalizeAdmin(raw);
-    } catch {
-      const newAdmin: AdminAccount = {
-        id: `adm_00${adminsCache.length + 1}`,
-        name: payload.name,
+    const res = await apiClient<RawBackendAdmin | { admin?: RawBackendAdmin }>('/admin/admins', {
+      method: 'POST',
+      body: JSON.stringify({
         email: payload.email,
-        role: payload.role,
-        additionalRoles: payload.additionalRoles || [],
+        password: payload.temporaryPassword,
+        fullName: payload.name,
+        roles,
+        isSuperAdmin: payload.role === 'super_admin' || roles.includes('super_admin'),
         department: payload.department,
-        status: 'active',
-        privileges: payload.privileges,
-        createdAt: new Date().toISOString(),
-        createdByAdminName: creatorName,
-        phoneNumber: payload.phoneNumber,
-      };
+        phone: payload.phoneNumber,
+      }),
+    });
 
-      adminsCache.push(newAdmin);
-      return newAdmin;
-    }
+    const raw = 'admin' in res && res.admin ? res.admin : (res as RawBackendAdmin);
+    return normalizeAdmin(raw);
   },
 
   async updateAdmin(id: string, payload: UpdateAdminPayload): Promise<AdminAccount> {
-    try {
-      const roles = payload.role
-        ? payload.additionalRoles
-          ? [payload.role, ...payload.additionalRoles]
-          : [payload.role]
-        : undefined;
+    const roles = payload.role
+      ? payload.additionalRoles
+        ? [payload.role, ...payload.additionalRoles]
+        : [payload.role]
+      : undefined;
 
-      const res = await apiClient<RawBackendAdmin | { admin?: RawBackendAdmin }>(
-        `/admin/admins/${id}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({
-            fullName: payload.name,
-            roles,
-            isSuperAdmin: payload.role === 'super_admin',
-            department: payload.department,
-          }),
-        }
-      );
+    const res = await apiClient<RawBackendAdmin | { admin?: RawBackendAdmin }>(
+      `/admin/admins/${id}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({
+          fullName: payload.name,
+          roles,
+          isSuperAdmin: payload.role === 'super_admin',
+          department: payload.department,
+        }),
+      }
+    );
 
-      const raw = 'admin' in res && res.admin ? res.admin : (res as RawBackendAdmin);
-      return normalizeAdmin(raw);
-    } catch {
-      const index = adminsCache.findIndex((a) => a.id === id);
-      if (index === -1) throw new Error('Admin not found');
-
-      const updated: AdminAccount = {
-        ...adminsCache[index],
-        ...payload,
-      };
-
-      adminsCache[index] = updated;
-      return updated;
-    }
+    const raw = 'admin' in res && res.admin ? res.admin : (res as RawBackendAdmin);
+    return normalizeAdmin(raw);
   },
 
   async deleteAdmin(id: string): Promise<void> {
-    try {
-      await apiClient(`/admin/admins/${id}`, { method: 'DELETE' });
-    } catch {
-      const index = adminsCache.findIndex((a) => a.id === id);
-      if (index !== -1) {
-        adminsCache.splice(index, 1);
-      }
-    }
+    await apiClient(`/admin/admins/${id}`, { method: 'DELETE' });
   },
 
   async deactivateAdmin(id: string): Promise<AdminAccount> {

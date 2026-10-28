@@ -1,8 +1,5 @@
 import { AuditAction, AuditActor, AuditLog, AuditFilterParams } from '@/types/audit';
-import { INITIAL_AUDIT_LOGS } from '@/lib/mockData';
 import { apiClient } from './apiClient';
-
-const auditLogsCache: AuditLog[] = [...INITIAL_AUDIT_LOGS];
 
 interface RawBackendAuditLog {
   id: string;
@@ -95,42 +92,15 @@ export const auditService = {
 
       return { logs: [], total: 0 };
     } catch {
-      let filtered = [...auditLogsCache];
-
-      if (params.action && params.action !== 'all') {
-        filtered = filtered.filter((log) => log.action === params.action);
-      }
-
-      if (params.severity && params.severity !== 'all') {
-        filtered = filtered.filter((log) => log.severity === params.severity);
-      }
-
-      if (params.actorSearch) {
-        const q = params.actorSearch.toLowerCase();
-        filtered = filtered.filter(
-          (log) =>
-            log.actor.name.toLowerCase().includes(q) ||
-            log.actor.email.toLowerCase().includes(q) ||
-            log.description.toLowerCase().includes(q) ||
-            log.targetResource.toLowerCase().includes(q)
-        );
-      }
-
-      return {
-        logs: filtered,
-        total: filtered.length,
-      };
+      return { logs: [], total: 0 };
     }
   },
 
   async logAction(newLog: Omit<AuditLog, 'id' | 'timestamp'>): Promise<AuditLog> {
-    const entry: AuditLog = {
+    return {
       ...newLog,
       id: `aud_${Date.now()}`,
       timestamp: new Date().toISOString(),
     };
-
-    auditLogsCache.unshift(entry);
-    return entry;
   },
 };

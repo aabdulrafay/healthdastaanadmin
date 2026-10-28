@@ -1,8 +1,5 @@
 import { User, UserFilterParams, UserRole, UserStatus, VerificationStatus } from '@/types/user';
-import { INITIAL_USERS } from '@/lib/mockData';
 import { apiClient } from './apiClient';
-
-const usersCache: User[] = [...INITIAL_USERS];
 
 interface RawUserItem {
   id: string;
@@ -108,36 +105,7 @@ export const userService = {
 
       return { users: [], total: 0 };
     } catch {
-      // Mock Fallback
-      let filtered = [...usersCache];
-
-      if (params.search) {
-        const q = params.search.toLowerCase();
-        filtered = filtered.filter(
-          (u) =>
-            u.fullName.toLowerCase().includes(q) ||
-            u.email.toLowerCase().includes(q) ||
-            u.phone.includes(q) ||
-            (u.pmdcNumber && u.pmdcNumber.toLowerCase().includes(q))
-        );
-      }
-
-      if (params.role && params.role !== 'all') {
-        filtered = filtered.filter((u) => u.role === params.role);
-      }
-
-      if (params.status && params.status !== 'all') {
-        filtered = filtered.filter((u) => u.status === params.status);
-      }
-
-      if (params.verificationStatus && params.verificationStatus !== 'all') {
-        filtered = filtered.filter((u) => u.verificationStatus === params.verificationStatus);
-      }
-
-      return {
-        users: filtered,
-        total: filtered.length,
-      };
+      return { users: [], total: 0 };
     }
   },
 
@@ -147,8 +115,7 @@ export const userService = {
       const raw = 'user' in res && res.user ? res.user : (res as RawUserItem);
       return normalizeUser(raw);
     } catch {
-      const user = usersCache.find((u) => u.id === id);
-      return user || null;
+      return null;
     }
   },
 
@@ -156,54 +123,21 @@ export const userService = {
     id: string,
     status: UserStatus,
     reason?: string,
-    suspendedUntil?: string
+    _suspendedUntil?: string
   ): Promise<User> {
-    try {
-      const res = await apiClient<{ user?: RawUserItem } | RawUserItem>(
-        `/admin/users/${id}/status`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({ status, reason }),
-        }
-      );
-      const raw = 'user' in res && res.user ? res.user : (res as RawUserItem);
-      return normalizeUser(raw);
-    } catch {
-      const index = usersCache.findIndex((u) => u.id === id);
-      if (index === -1) throw new Error('User not found.');
-
-      const updated: User = {
-        ...usersCache[index],
-        status,
-        blockedReason: status === 'blocked' ? reason : undefined,
-        blockedAt: status === 'blocked' ? new Date().toISOString() : undefined,
-        suspendedUntil: status === 'suspended' ? suspendedUntil : undefined,
-        suspensionReason: status === 'suspended' ? reason : undefined,
-      };
-
-      usersCache[index] = updated;
-      return updated;
-    }
+    const res = await apiClient<{ user?: RawUserItem } | RawUserItem>(`/admin/users/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, reason }),
+    });
+    const raw = 'user' in res && res.user ? res.user : (res as RawUserItem);
+    return normalizeUser(raw);
   },
 
   async revokeAllUserSessions(id: string): Promise<{ success: boolean; revokedCount: number }> {
-    try {
-      const res = await apiClient<{ message: string; revokedCount: number }>(
-        `/admin/users/${id}/revoke-tokens`,
-        { method: 'POST' }
-      );
-      return { success: true, revokedCount: res.revokedCount ?? 1 };
-    } catch {
-      const index = usersCache.findIndex((u) => u.id === id);
-      if (index !== -1) {
-        const revokedCount = usersCache[index].activeSessionsCount;
-        usersCache[index] = {
-          ...usersCache[index],
-          activeSessionsCount: 0,
-        };
-        return { success: true, revokedCount };
-      }
-      return { success: true, revokedCount: 1 };
-    }
+    const res = await apiClient<{ message: string; revokedCount: number }>(
+      `/admin/users/${id}/revoke-tokens`,
+      { method: 'POST' }
+    );
+    return { success: true, revokedCount: res.revokedCount ?? 1 };
   },
 };
