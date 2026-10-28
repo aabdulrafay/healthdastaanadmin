@@ -36,13 +36,29 @@ async function handleTokenRefresh(): Promise<string | null> {
   isRefreshing = true;
 
   try {
-    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refreshToken }),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+    } catch (networkError) {
+      // Seamlessly fallback to same-origin proxy if browser CORS failed
+      if (typeof window !== 'undefined') {
+        res = await fetch('/api/v1/auth/refresh', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refreshToken }),
+        });
+      } else {
+        throw networkError;
+      }
+    }
 
     if (!res.ok) {
       throw new Error('Refresh failed');
@@ -92,21 +108,40 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
     }
   }
 
-  try {
-    let response = await fetch(url, {
+  const executeFetch = async (targetUrl: string): Promise<Response> => {
+    return fetch(targetUrl, {
       ...rest,
       headers: requestHeaders,
     });
+  };
+
+  try {
+    let response: Response;
+    try {
+      response = await executeFetch(url);
+    } catch (networkError) {
+      // If browser CORS blocked direct access ('Failed to fetch'), seamlessly fallback to internal Next.js proxy
+      if (typeof window !== 'undefined' && url.startsWith('http') && !url.includes('/api/v1')) {
+        const proxyUrl = `/api/v1${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+        response = await executeFetch(proxyUrl);
+      } else {
+        throw networkError;
+      }
+    }
 
     // 401 Unauthorized: Attempt token refresh
     if (response.status === 401 && !skipAuth) {
       const newToken = await handleTokenRefresh();
       if (newToken) {
         requestHeaders.set('Authorization', `Bearer ${newToken}`);
-        response = await fetch(url, {
-          ...rest,
-          headers: requestHeaders,
-        });
+        try {
+          response = await executeFetch(url);
+        } catch {
+          if (typeof window !== 'undefined' && url.startsWith('http') && !url.includes('/api/v1')) {
+            const proxyUrl = `/api/v1${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+            response = await executeFetch(proxyUrl);
+          }
+        }
       }
     }
 
