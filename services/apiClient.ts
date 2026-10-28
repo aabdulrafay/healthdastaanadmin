@@ -36,7 +36,7 @@ async function handleTokenRefresh(): Promise<string | null> {
   isRefreshing = true;
 
   try {
-    const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

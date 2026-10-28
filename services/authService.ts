@@ -2,7 +2,7 @@ import { storage } from '@/lib/storage';
 import { AdminRole, AdminUser, AuthResponse, LoginCredentials } from '@/types/auth';
 import { DEFAULT_SUPERADMIN } from '@/lib/constants';
 import { INITIAL_ADMINS } from '@/lib/mockData';
-import { apiClient } from './apiClient';
+import { apiClient, ApiError } from './apiClient';
 
 const VALID_ADMIN_ROLES: AdminRole[] = [
   'super_admin',
@@ -56,15 +56,33 @@ export const DEMO_ADMIN_ACCOUNTS: Array<{
   },
 ];
 
+interface BackendAuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    roles?: string[];
+    role?: string;
+    email?: string | { address?: string };
+    phone?: string;
+    fullName?: string;
+    givenName?: string;
+    familyName?: string;
+    status?: string;
+    department?: string;
+    createdAt?: string;
+    mustChangePassword?: boolean;
+  };
+}
+
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const emailLower = credentials.email.trim().toLowerCase();
 
-    // Rejection check for patient / non-admin accounts
+    // Fast-path client rejection check for standard patient accounts
     if (
       emailLower.includes('patient') ||
       emailLower.includes('doctor') ||
-      emailLower.includes('user') ||
       emailLower === 'sana.tariq@gmail.com'
     ) {
       throw new Error(
@@ -72,71 +90,79 @@ export const authService = {
       );
     }
 
-    // Dev mode immediate check for default superadmin
-    if (emailLower === DEFAULT_SUPERADMIN.email.toLowerCase()) {
-      if (
-        credentials.password !== DEFAULT_SUPERADMIN.password &&
-        credentials.password !== 'admin' &&
-        credentials.password.length < 4
-      ) {
-        throw new Error('Invalid Super Admin password.');
-      }
-
-      const superAdminUser: AdminUser = {
-        id: 'adm_001',
-        name: DEFAULT_SUPERADMIN.name,
-        email: DEFAULT_SUPERADMIN.email,
-        role: 'super_admin',
-        additionalRoles: [
-          'api_control_admin',
-          'compliance_admin',
-          'verification_admin',
-          'support_admin',
-        ],
-        department: 'Executive Governance & Engineering',
-        createdAt: '2025-08-01T00:00:00Z',
-        lastLoginAt: new Date().toISOString(),
-        mustChangePassword: false,
-      };
-
-      const response: AuthResponse = {
-        user: superAdminUser,
-        tokens: {
-          accessToken: `hd_adm_mock_token_${Date.now()}`,
-          refreshToken: `hd_adm_mock_refresh_${Date.now()}`,
-          expiresIn: 86400,
-        },
-        message: 'Super Admin authenticated successfully.',
-      };
-
-      storage.setAccessToken(response.tokens.accessToken);
-      storage.setRefreshToken(response.tokens.refreshToken);
-      storage.setUser(response.user);
-      return response;
-    }
-
-    // 1. First attempt to call the real backend if reachable
+    // 1. Attempt authentication with the real HealthDastaan NestJS Backend API
     try {
-      const result = await apiClient<AuthResponse>('/auth/admin/login', {
+      const result = await apiClient<BackendAuthResponse>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({
-          email: emailLower,
+          identifier: emailLower,
           password: credentials.password,
+          platform: 'web',
         }),
         skipAuth: true,
       });
 
-      const userRole = result.user?.role;
-      if (!userRole || !VALID_ADMIN_ROLES.includes(userRole)) {
-        throw new Error(
-          'Access Denied: This account lacks administrative credentials for the HealthDastaan Admin Portal.'
-        );
-      }
+      if (result && result.accessToken && result.user) {
+        const roles: string[] = Array.isArray(result.user.roles)
+          ? result.user.roles
+          : result.user.role
+            ? [result.user.role]
+            : [];
 
-      storage.setAccessToken(result.tokens.accessToken);
-      storage.setRefreshToken(result.tokens.refreshToken);
-      storage.setUser(result.user);
-      return result;
+        const hasAdminRole = roles.some((r) => VALID_ADMIN_ROLES.includes(r as AdminRole));
+        if (!hasAdminRole) {
+          throw new Error(
+            'Access Denied: This account lacks administrative credentials for the HealthDastaan Admin Portal.'
+          );
+        }
+
+        const primaryRole = (roles.find((r) => VALID_ADMIN_ROLES.includes(r as AdminRole)) ||
+          'super_admin') as AdminRole;
+        const additionalRoles = roles.filter(
+          (r) => r !== primaryRole && VALID_ADMIN_ROLES.includes(r as AdminRole)
+        ) as AdminRole[];
+
+        const email =
+          typeof result.user.email === 'string'
+            ? result.user.email
+            : typeof result.user.email === 'object' && result.user.email?.address
+              ? result.user.email.address
+              : emailLower;
+
+        const name =
+          typeof result.user.fullName === 'string'
+            ? result.user.fullName
+            : result.user.givenName
+              ? `${result.user.givenName} ${result.user.familyName || ''}`.trim()
+              : email;
+
+        const adminUser: AdminUser = {
+          id: result.user.id,
+          name,
+          email,
+          role: primaryRole,
+          additionalRoles,
+          department: result.user.department || 'Clinical Operations',
+          createdAt: result.user.createdAt || new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+          mustChangePassword: Boolean(result.user.mustChangePassword),
+        };
+
+        const authResponse: AuthResponse = {
+          user: adminUser,
+          tokens: {
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
+            expiresIn: 86400,
+          },
+          message: 'Authenticated successfully with HealthDastaan API.',
+        };
+
+        storage.setAccessToken(authResponse.tokens.accessToken);
+        storage.setRefreshToken(authResponse.tokens.refreshToken);
+        storage.setUser(authResponse.user);
+        return authResponse;
+      }
     } catch (networkOrApiError: unknown) {
       if (
         networkOrApiError instanceof Error &&
@@ -145,15 +171,64 @@ export const authService = {
         throw networkOrApiError;
       }
 
+      // If backend explicitly rejected invalid credentials (401/403) and not a demo test fallback
+      if (networkOrApiError instanceof ApiError && networkOrApiError.status === 401) {
+        if (
+          emailLower !== DEFAULT_SUPERADMIN.email.toLowerCase() &&
+          !DEMO_ADMIN_ACCOUNTS.some((a) => a.email.toLowerCase() === emailLower)
+        ) {
+          throw new Error(networkOrApiError.message || 'Invalid administrator email or password.');
+        }
+      }
+
+      // 2. Development / Offline Fallback for default superadmin
+      if (emailLower === DEFAULT_SUPERADMIN.email.toLowerCase()) {
+        if (
+          credentials.password !== DEFAULT_SUPERADMIN.password &&
+          credentials.password !== 'admin' &&
+          credentials.password.length < 4
+        ) {
+          throw new Error('Invalid Super Admin password.');
+        }
+
+        const superAdminUser: AdminUser = {
+          id: 'adm_001',
+          name: DEFAULT_SUPERADMIN.name,
+          email: DEFAULT_SUPERADMIN.email,
+          role: 'super_admin',
+          additionalRoles: [
+            'api_control_admin',
+            'compliance_admin',
+            'verification_admin',
+            'support_admin',
+          ],
+          department: 'Executive Governance & Engineering',
+          createdAt: '2025-08-01T00:00:00Z',
+          lastLoginAt: new Date().toISOString(),
+          mustChangePassword: false,
+        };
+
+        const response: AuthResponse = {
+          user: superAdminUser,
+          tokens: {
+            accessToken: `hd_adm_mock_token_${Date.now()}`,
+            refreshToken: `hd_adm_mock_refresh_${Date.now()}`,
+            expiresIn: 86400,
+          },
+          message: 'Super Admin authenticated in local/development mode.',
+        };
+
+        storage.setAccessToken(response.tokens.accessToken);
+        storage.setRefreshToken(response.tokens.refreshToken);
+        storage.setUser(response.user);
+        return response;
+      }
+
       // Check other demo admin accounts
       const matchingDemo = INITIAL_ADMINS.find((a) => a.email.toLowerCase() === emailLower);
 
       if (matchingDemo) {
-        if (credentials.password.length < 3) {
-          throw new Error('Password must be at least 3 characters.');
-        }
-
-        const adminUser: AdminUser = {
+        const demoUser: AdminUser = {
           id: matchingDemo.id,
           name: matchingDemo.name,
           email: matchingDemo.email,
@@ -166,31 +241,19 @@ export const authService = {
         };
 
         const response: AuthResponse = {
-          user: adminUser,
+          user: demoUser,
           tokens: {
-            accessToken: `hd_adm_mock_token_${Date.now()}`,
-            refreshToken: `hd_adm_mock_refresh_${Date.now()}`,
+            accessToken: `hd_adm_demo_token_${Date.now()}`,
+            refreshToken: `hd_adm_demo_refresh_${Date.now()}`,
             expiresIn: 86400,
           },
-          message: 'Authenticated successfully in administrative role.',
+          message: `Authenticated under ${matchingDemo.role.replace('_', ' ').toUpperCase()} role`,
         };
 
         storage.setAccessToken(response.tokens.accessToken);
         storage.setRefreshToken(response.tokens.refreshToken);
         storage.setUser(response.user);
         return response;
-      }
-
-      // If user is a regular patient or practitioner attempting admin login
-      if (
-        emailLower.includes('patient') ||
-        emailLower.includes('doctor') ||
-        emailLower.includes('user') ||
-        emailLower === 'sana.tariq@gmail.com'
-      ) {
-        throw new Error(
-          'Access Denied: Standard patient and practitioner accounts cannot access the Clinical Operations Admin Portal.'
-        );
       }
 
       // Generic authentication failure
@@ -200,17 +263,30 @@ export const authService = {
           : 'Invalid credentials or administrative user not found.'
       );
     }
+
+    throw new Error('Authentication failed.');
   },
 
   async getCurrentUser(): Promise<AdminUser | null> {
-    const user = storage.getUser<AdminUser>();
-    if (!user) return null;
-    return user;
+    try {
+      const res = await apiClient<{ user?: AdminUser }>('/auth/me');
+      if (res && res.user) {
+        storage.setUser(res.user);
+        return res.user;
+      }
+    } catch {
+      // Fallback to local storage if offline
+    }
+    return storage.getUser<AdminUser>();
   },
 
   async logout(): Promise<void> {
     try {
-      await apiClient('/auth/logout', { method: 'POST' }).catch(() => {});
+      const refreshToken = storage.getRefreshToken();
+      await apiClient('/auth/logout', {
+        method: 'POST',
+        body: JSON.stringify({ refreshToken }),
+      }).catch(() => {});
     } finally {
       storage.clearAll();
     }
