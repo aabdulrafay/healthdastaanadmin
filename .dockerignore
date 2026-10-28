@@ -1,0 +1,28 @@
+.git
+.github
+.next
+.vscode
+.idea
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment files
+.env*
+!.env.example
+
+# Test artifacts
+coverage
+test-results
+playwright-report
+blob-report
+e2e
+tests
+__tests__
+
+# Docs
+docs
+README.md
+AGENTS.md

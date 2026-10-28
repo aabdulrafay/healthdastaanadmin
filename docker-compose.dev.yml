@@ -1,0 +1,25 @@
+services:
+  healthdastaan-admin-dev:
+    image: node:20-alpine
+    container_name: healthdastaan-admin-dev
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - '${HOST_PORT:-3001}:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:3000/v1}
+      - INTERNAL_API_BASE_URL=${INTERNAL_API_BASE_URL:-http://backend:3000/v1}
+      - WATCHPACK_POLLING=true
+    networks:
+      - healthdastaan-net
+
+networks:
+  healthdastaan-net:
+    name: healthdastaan-net
+    external: true
