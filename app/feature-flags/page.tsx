@@ -14,17 +14,7 @@ import { featureFlagService } from '@/services/featureFlagService';
 import { auditService } from '@/services/auditService';
 import { FeatureFlag } from '@/types/featureFlag';
 import { formatDate, formatTimeAgo } from '@/lib/utils';
-import {
-  Sliders,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  History,
-  Shield,
-  Layers,
-  Terminal,
-  Zap,
-} from 'lucide-react';
+import { AlertTriangle, History, Terminal } from 'lucide-react';
 
 export default function FeatureFlagsPage() {
   const { user: currentAdmin } = useAuth();
@@ -142,8 +132,7 @@ export default function FeatureFlagsPage() {
       flag.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       flag.affectedApis.some((api) => api.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesCategory =
-      selectedCategory === 'all' || flag.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || flag.category === selectedCategory;
 
     return matchesSearch && matchesCategory;
   });
@@ -250,8 +239,8 @@ export default function FeatureFlagsPage() {
                             flag.criticality === 'critical'
                               ? 'red'
                               : flag.criticality === 'high'
-                              ? 'amber'
-                              : 'blue'
+                                ? 'amber'
+                                : 'blue'
                           }
                           size="sm"
                         >
@@ -296,9 +285,10 @@ export default function FeatureFlagsPage() {
                             {flag.disabledReason || 'Scheduled Maintenance'}
                           </p>
                           <p className="text-[11px] text-amber-700">
-                            Toggled by <strong className="font-semibold">{flag.lastToggledBy.name}</strong> (
-                            {flag.lastToggledBy.role.replace('_', ' ')}) • {formatTimeAgo(flag.lastToggledAt)} (
-                            {formatDate(flag.lastToggledAt)})
+                            Toggled by{' '}
+                            <strong className="font-semibold">{flag.lastToggledBy.name}</strong> (
+                            {flag.lastToggledBy.role.replace('_', ' ')}) •{' '}
+                            {formatTimeAgo(flag.lastToggledAt)} ({formatDate(flag.lastToggledAt)})
                           </p>
                         </div>
                       )}
@@ -377,7 +367,9 @@ export default function FeatureFlagsPage() {
             <div className="space-y-4 text-xs">
               <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
                 <span className="text-[#737781] block">Internal Registry Key</span>
-                <span className="font-mono font-bold text-[#002654] text-sm">{inspectFlag.key}</span>
+                <span className="font-mono font-bold text-[#002654] text-sm">
+                  {inspectFlag.key}
+                </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

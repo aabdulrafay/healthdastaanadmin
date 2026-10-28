@@ -2,7 +2,7 @@ import { User, UserFilterParams, UserStatus } from '@/types/user';
 import { INITIAL_USERS } from '@/lib/mockData';
 import { apiClient } from './apiClient';
 
-let usersCache: User[] = [...INITIAL_USERS];
+const usersCache: User[] = [...INITIAL_USERS];
 
 export const userService = {
   async getUsers(params: UserFilterParams = {}): Promise<{ users: User[]; total: number }> {
@@ -15,7 +15,9 @@ export const userService = {
       if (params.page) query.set('page', String(params.page));
       if (params.limit) query.set('limit', String(params.limit));
 
-      const res = await apiClient<{ users: User[]; total: number }>(`/admin/users?${query.toString()}`);
+      const res = await apiClient<{ users: User[]; total: number }>(
+        `/admin/users?${query.toString()}`
+      );
       return res;
     } catch {
       // Mock Fallback

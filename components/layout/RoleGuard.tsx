@@ -40,7 +40,9 @@ export function RoleGuard({ children, allowedRoles, fallback }: RoleGuardProps) 
         <div className="space-y-2">
           <h2 className="text-xl font-extrabold text-[#002654]">Access Restricted</h2>
           <p className="text-sm text-[#434750] leading-relaxed">
-            Your current administrative role (<strong className="capitalize">{user?.role.replace('_', ' ')}</strong>) does not have authorization to view or execute operations in this module.
+            Your current administrative role (
+            <strong className="capitalize">{user?.role.replace('_', ' ')}</strong>) does not have
+            authorization to view or execute operations in this module.
           </p>
         </div>
         <div className="pt-2">

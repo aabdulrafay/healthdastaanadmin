@@ -1,7 +1,11 @@
 import { AdminRole } from '@/types/auth';
 
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'https://api.healthdastaan.com/v1';
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  'https://api.healthdastaan.com/v1';
+
+export const INTERNAL_API_BASE_URL = process.env.INTERNAL_API_BASE_URL || API_BASE_URL;
 
 export const DEFAULT_SUPERADMIN = {
   email: 'superadmin@healthdastaan.com',
@@ -21,7 +25,8 @@ export const ROLE_CONFIGS: Record<AdminRole, RoleConfig> = {
   super_admin: {
     label: 'Super Admin',
     badgeColor: 'bg-[#002654] text-white border-[#0B3C78]',
-    description: 'Unrestricted enterprise control across all clinical systems, admins, and services.',
+    description:
+      'Unrestricted enterprise control across all clinical systems, admins, and services.',
     accessibleRoutes: ['/', '/users', '/verification', '/feature-flags', '/audit-logs', '/admins'],
   },
   verification_admin: {
@@ -63,7 +68,13 @@ export const NAV_ITEMS: NavItem[] = [
     name: 'Dashboard',
     href: '/',
     iconName: 'LayoutDashboard',
-    allowedRoles: ['super_admin', 'verification_admin', 'support_admin', 'compliance_admin', 'api_control_admin'],
+    allowedRoles: [
+      'super_admin',
+      'verification_admin',
+      'support_admin',
+      'compliance_admin',
+      'api_control_admin',
+    ],
   },
   {
     name: 'User Management',

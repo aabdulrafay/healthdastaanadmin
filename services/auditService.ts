@@ -2,7 +2,7 @@ import { AuditLog, AuditFilterParams } from '@/types/audit';
 import { INITIAL_AUDIT_LOGS } from '@/lib/mockData';
 import { apiClient } from './apiClient';
 
-let auditLogsCache: AuditLog[] = [...INITIAL_AUDIT_LOGS];
+const auditLogsCache: AuditLog[] = [...INITIAL_AUDIT_LOGS];
 
 export const auditService = {
   async getAuditLogs(params: AuditFilterParams = {}): Promise<{ logs: AuditLog[]; total: number }> {
@@ -13,7 +13,9 @@ export const auditService = {
       if (params.actorSearch) query.set('actorSearch', params.actorSearch);
       if (params.status) query.set('status', params.status);
 
-      const res = await apiClient<{ logs: AuditLog[]; total: number }>(`/admin/audit-logs?${query.toString()}`);
+      const res = await apiClient<{ logs: AuditLog[]; total: number }>(
+        `/admin/audit-logs?${query.toString()}`
+      );
       return res;
     } catch {
       let filtered = [...auditLogsCache];

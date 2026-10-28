@@ -15,21 +15,8 @@ import { adminService } from '@/services/adminService';
 import { auditService } from '@/services/auditService';
 import { AdminAccount, CreateAdminPayload } from '@/types/admin';
 import { AdminRole } from '@/types/auth';
-import { formatDate, formatTimeAgo, getInitials } from '@/lib/utils';
-import {
-  LockKeyhole,
-  UserPlus,
-  Shield,
-  ShieldAlert,
-  CheckCircle,
-  XCircle,
-  Key,
-  Building,
-  Mail,
-  Phone,
-  Edit2,
-  Trash2,
-} from 'lucide-react';
+import { formatTimeAgo, getInitials } from '@/lib/utils';
+import { UserPlus, Shield, CheckCircle, XCircle } from 'lucide-react';
 
 export default function AdminManagementPage() {
   const { user: currentAdmin } = useAuth();
@@ -210,7 +197,8 @@ export default function AdminManagementPage() {
                 </h2>
               </div>
               <p className="text-xs text-[#737781] mt-1">
-                Restricted to Super Administrators. Provision, audit, and revoke administrative credentials across departments.
+                Restricted to Super Administrators. Provision, audit, and revoke administrative
+                credentials across departments.
               </p>
             </div>
 
@@ -253,10 +241,7 @@ export default function AdminManagementPage() {
                       const isDeactivated = adm.status === 'deactivated';
 
                       return (
-                        <tr
-                          key={adm.id}
-                          className="hover:bg-[#F7F9FF]/70 transition-colors group"
-                        >
+                        <tr key={adm.id} className="hover:bg-[#F7F9FF]/70 transition-colors group">
                           {/* Name & Contact */}
                           <td className="py-3.5 px-5">
                             <div className="flex items-center gap-3">
@@ -290,11 +275,7 @@ export default function AdminManagementPage() {
 
                           {/* Status */}
                           <td className="py-3.5 px-4">
-                            <Badge
-                              variant={isDeactivated ? 'blocked' : 'active'}
-                              size="sm"
-                              dot
-                            >
+                            <Badge variant={isDeactivated ? 'blocked' : 'active'} size="sm" dot>
                               {adm.status.toUpperCase()}
                             </Badge>
                           </td>
@@ -430,8 +411,14 @@ export default function AdminManagementPage() {
                   options={[
                     { label: 'Verification Admin (Doctor Licenses)', value: 'verification_admin' },
                     { label: 'Support Admin (User Lifecycle & Sessions)', value: 'support_admin' },
-                    { label: 'Compliance Admin (Audit & Data Integrity)', value: 'compliance_admin' },
-                    { label: 'API Control Admin (Feature Flags & Infrastructure)', value: 'api_control_admin' },
+                    {
+                      label: 'Compliance Admin (Audit & Data Integrity)',
+                      value: 'compliance_admin',
+                    },
+                    {
+                      label: 'API Control Admin (Feature Flags & Infrastructure)',
+                      value: 'api_control_admin',
+                    },
                     { label: 'Super Admin (Unrestricted Full Access)', value: 'super_admin' },
                   ]}
                 />
@@ -440,9 +427,7 @@ export default function AdminManagementPage() {
                   label="Department / Unit"
                   placeholder="e.g. Medical Board"
                   value={newAdminForm.department}
-                  onChange={(e) =>
-                    setNewAdminForm({ ...newAdminForm, department: e.target.value })
-                  }
+                  onChange={(e) => setNewAdminForm({ ...newAdminForm, department: e.target.value })}
                   required
                 />
               </div>

@@ -2,7 +2,7 @@ import { FeatureFlag, ToggleFlagPayload } from '@/types/featureFlag';
 import { INITIAL_FEATURE_FLAGS } from '@/lib/mockData';
 import { apiClient } from './apiClient';
 
-let flagsCache: FeatureFlag[] = [...INITIAL_FEATURE_FLAGS];
+const flagsCache: FeatureFlag[] = [...INITIAL_FEATURE_FLAGS];
 
 export const featureFlagService = {
   async getFeatureFlags(): Promise<FeatureFlag[]> {

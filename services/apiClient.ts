@@ -67,7 +67,7 @@ async function handleTokenRefresh(): Promise<string | null> {
     refreshQueue.forEach((callback) => callback(null));
     refreshQueue = [];
     if (typeof window !== 'undefined') {
-      window.location.href = '/login?expired=1';
+      window.location.replace('/login?expired=1');
     }
     return null;
   } finally {
@@ -75,10 +75,7 @@ async function handleTokenRefresh(): Promise<string | null> {
   }
 }
 
-export async function apiClient<T>(
-  endpoint: string,
-  options: RequestOptions = {}
-): Promise<T> {
+export async function apiClient<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { skipAuth = false, headers = {}, ...rest } = options;
 
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
@@ -131,9 +128,6 @@ export async function apiClient<T>(
     return (await response.json()) as T;
   } catch (error) {
     if (error instanceof ApiError) throw error;
-    throw new ApiError(
-      error instanceof Error ? error.message : 'Unknown Network Error',
-      0
-    );
+    throw new ApiError(error instanceof Error ? error.message : 'Unknown Network Error', 0);
   }
 }

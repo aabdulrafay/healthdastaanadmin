@@ -41,8 +41,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         'bg-white text-[#006B5F] border border-[#00A896] hover:bg-[#EDF4FF] focus:ring-[#00A896]',
       outline:
         'bg-white text-[#121D27] border border-slate-300 hover:bg-slate-50 focus:ring-[#002654]',
-      ghost:
-        'text-[#0B3C78] hover:bg-[#EDF4FF] focus:ring-[#0B3C78]',
+      ghost: 'text-[#0B3C78] hover:bg-[#EDF4FF] focus:ring-[#0B3C78]',
       danger:
         'bg-[#BA1A1A] hover:bg-[#93000A] text-white shadow-sm hover:shadow-red-500/20 hover:shadow-lg focus:ring-[#BA1A1A]',
       success:
@@ -56,11 +55,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(baseStyles, sizeStyles, variantStyles, className)}
         {...props}
       >
-        {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-        ) : (
-          leftIcon
-        )}
+        {isLoading ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : leftIcon}
         <span>{children}</span>
         {!isLoading && rightIcon}
       </button>

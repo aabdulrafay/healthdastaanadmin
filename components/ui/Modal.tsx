@@ -77,9 +77,7 @@ export function Modal({
         <div className="flex items-start justify-between px-6 py-5 border-b border-slate-100 bg-[#F7F9FF]/60">
           <div>
             <h3 className="text-lg font-bold text-[#002654]">{title}</h3>
-            {subtitle && (
-              <p className="text-xs text-[#434750] mt-0.5">{subtitle}</p>
-            )}
+            {subtitle && <p className="text-xs text-[#434750] mt-0.5">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}

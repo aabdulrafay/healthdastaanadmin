@@ -100,7 +100,8 @@ export const INITIAL_USERS: User[] = [
     activeSessionsCount: 0,
     createdAt: '2026-01-02T11:45:00Z',
     lastActiveAt: '2026-01-05T08:30:00Z',
-    blockedReason: 'Submitted fraudulent PMDC license document detected during manual council verification',
+    blockedReason:
+      'Submitted fraudulent PMDC license document detected during manual council verification',
     blockedAt: '2026-01-06T10:14:00Z',
   },
   {
@@ -173,7 +174,11 @@ export const INITIAL_VERIFICATIONS: PractitionerApplication[] = [
     pmdcNumber: '89102-S',
     specialization: 'Pediatric Neurology',
     subSpecialization: 'Epilepsy & Neuromuscular Disorders',
-    qualifications: ['MBBS (Dow University)', 'FCPS (Pediatrics)', 'Fellowship in Pediatric Neurology (UK)'],
+    qualifications: [
+      'MBBS (Dow University)',
+      'FCPS (Pediatrics)',
+      'Fellowship in Pediatric Neurology (UK)',
+    ],
     medicalCouncilState: 'Pakistan Medical & Dental Council (Islamabad)',
     clinicHospitalName: 'Shifa International Hospital',
     clinicAddress: 'Sector H-8/4, Pitras Bukhari Road, Islamabad',
@@ -185,7 +190,8 @@ export const INITIAL_VERIFICATIONS: PractitionerApplication[] = [
         id: 'doc_01',
         name: 'PMDC_Permanent_Registration_89102S.pdf',
         type: 'pmdc_license',
-        fileUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=60',
+        fileUrl:
+          'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=60',
         fileSizeBytes: 2480100,
         uploadedAt: '2026-02-10T09:10:00Z',
         status: 'valid',
@@ -198,7 +204,8 @@ export const INITIAL_VERIFICATIONS: PractitionerApplication[] = [
         id: 'doc_02',
         name: 'MBBS_Degree_Dow_Medical_College.pdf',
         type: 'mbbs_degree',
-        fileUrl: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=60',
+        fileUrl:
+          'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=60',
         fileSizeBytes: 4120300,
         uploadedAt: '2026-02-10T09:12:00Z',
         status: 'valid',
@@ -207,7 +214,8 @@ export const INITIAL_VERIFICATIONS: PractitionerApplication[] = [
         id: 'doc_03',
         name: 'Hospital_Head_Affiliation_Letter.pdf',
         type: 'hospital_affiliation_letter',
-        fileUrl: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?w=800&auto=format&fit=crop&q=60',
+        fileUrl:
+          'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?w=800&auto=format&fit=crop&q=60',
         fileSizeBytes: 1850000,
         uploadedAt: '2026-02-10T09:14:00Z',
         status: 'pending_review',
@@ -223,7 +231,11 @@ export const INITIAL_VERIFICATIONS: PractitionerApplication[] = [
     phone: '+92 334 8877665',
     pmdcNumber: '92144-P',
     specialization: 'Endocrinology & Diabetology',
-    qualifications: ['MBBS (King Edward Medical University)', 'MRCP (UK)', 'SCE Endocrinology (UK)'],
+    qualifications: [
+      'MBBS (King Edward Medical University)',
+      'MRCP (UK)',
+      'SCE Endocrinology (UK)',
+    ],
     medicalCouncilState: 'PMDC Punjab Registry',
     clinicHospitalName: 'Aga Khan University Hospital',
     clinicAddress: 'National Stadium Rd, Aga Khan Hospital Complex, Karachi',
@@ -235,7 +247,8 @@ export const INITIAL_VERIFICATIONS: PractitionerApplication[] = [
         id: 'doc_04',
         name: 'PMDC_Practicing_License_92144P.pdf',
         type: 'pmdc_license',
-        fileUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=60',
+        fileUrl:
+          'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=60',
         fileSizeBytes: 3100000,
         uploadedAt: '2026-02-18T15:15:00Z',
         status: 'valid',
@@ -247,7 +260,8 @@ export const INITIAL_VERIFICATIONS: PractitionerApplication[] = [
         id: 'doc_05',
         name: 'MRCP_UK_Official_Diploma.pdf',
         type: 'fcps_specialization',
-        fileUrl: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=60',
+        fileUrl:
+          'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=60',
         fileSizeBytes: 5200000,
         uploadedAt: '2026-02-18T15:18:00Z',
         status: 'valid',
@@ -281,10 +295,15 @@ export const INITIAL_FEATURE_FLAGS: FeatureFlag[] = [
     id: 'flag_01',
     key: 'teleconsult_webrtc_v2',
     name: 'Encrypted Teleconsult Video & Audio Stream',
-    description: 'Enables WebRTC high-definition encrypted video consultations between practitioners and patients.',
+    description:
+      'Enables WebRTC high-definition encrypted video consultations between practitioners and patients.',
     category: 'telehealth',
     isEnabled: true,
-    affectedApis: ['/v1/telehealth/rooms', '/v1/telehealth/tokens', '/v1/telehealth/session-recording'],
+    affectedApis: [
+      '/v1/telehealth/rooms',
+      '/v1/telehealth/tokens',
+      '/v1/telehealth/session-recording',
+    ],
     lastToggledBy: {
       id: 'adm_001',
       name: 'Super Admin',
@@ -300,7 +319,8 @@ export const INITIAL_FEATURE_FLAGS: FeatureFlag[] = [
     id: 'flag_02',
     key: 'prescription_ai_ocr_v2',
     name: 'Prescription OCR & Drug Interaction Parser',
-    description: 'Automated optical character recognition for handwritten prescriptions with automated contraindication detection.',
+    description:
+      'Automated optical character recognition for handwritten prescriptions with automated contraindication detection.',
     category: 'ai_diagnostics',
     isEnabled: true,
     affectedApis: ['/v1/prescriptions/ocr/scan', '/v1/prescriptions/interactions'],
@@ -319,7 +339,8 @@ export const INITIAL_FEATURE_FLAGS: FeatureFlag[] = [
     id: 'flag_03',
     key: 'dual_role_instant_switching',
     name: 'Dual Role Dynamic Context Switching',
-    description: 'Allows verified doctors who also hold patient profiles to switch clinical context without re-authenticating.',
+    description:
+      'Allows verified doctors who also hold patient profiles to switch clinical context without re-authenticating.',
     category: 'auth',
     isEnabled: true,
     affectedApis: ['/v1/auth/switch-context', '/v1/auth/roles/active'],
@@ -338,7 +359,8 @@ export const INITIAL_FEATURE_FLAGS: FeatureFlag[] = [
     id: 'flag_04',
     key: 'jazzcash_easypaisa_checkout',
     name: 'JazzCash & EasyPaisa Direct Payment Rails',
-    description: 'Real-time mobile wallet checkout for doctor fee settlements and lab booking deposits.',
+    description:
+      'Real-time mobile wallet checkout for doctor fee settlements and lab booking deposits.',
     category: 'billing',
     isEnabled: false,
     affectedApis: ['/v1/payments/jazzcash/initiate', '/v1/payments/easypaisa/callback'],
@@ -358,7 +380,8 @@ export const INITIAL_FEATURE_FLAGS: FeatureFlag[] = [
     id: 'flag_05',
     key: 'practitioner_self_service_onboarding',
     name: 'Practitioner Fast-Track Onboarding & PMDC Verification',
-    description: 'Permits doctors to upload medical degrees and licenses directly from the mobile app.',
+    description:
+      'Permits doctors to upload medical degrees and licenses directly from the mobile app.',
     category: 'onboarding',
     isEnabled: true,
     affectedApis: ['/v1/practitioner/onboard', '/v1/practitioner/documents/upload'],
@@ -377,7 +400,8 @@ export const INITIAL_FEATURE_FLAGS: FeatureFlag[] = [
     id: 'flag_06',
     key: 'fcm_critical_telemetry_push',
     name: 'FCM Emergency Vital Alerts & Push Engine',
-    description: 'High-priority push notifications triggered on abnormal patient vitals (e.g. SpO2 < 90%, Pulse > 130).',
+    description:
+      'High-priority push notifications triggered on abnormal patient vitals (e.g. SpO2 < 90%, Pulse > 130).',
     category: 'infrastructure',
     isEnabled: true,
     affectedApis: ['/v1/notifications/push/dispatch', '/v1/vitals/alerts'],
@@ -424,7 +448,8 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
     },
     action: 'FEATURE_FLAG_DISABLED',
     targetResource: 'flag_04:jazzcash_easypaisa_checkout',
-    description: 'Temporarily disabled JazzCash/EasyPaisa gateway API due to upstream provider maintenance.',
+    description:
+      'Temporarily disabled JazzCash/EasyPaisa gateway API due to upstream provider maintenance.',
     severity: 'warning',
     status: 'warning',
     metadata: {
@@ -465,7 +490,8 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
     },
     action: 'USER_SUSPENDED',
     targetResource: 'usr_01H9A4:Hamza Raza',
-    description: 'Suspended patient profile until 2026-03-15 following clinical staff harassment report.',
+    description:
+      'Suspended patient profile until 2026-03-15 following clinical staff harassment report.',
     severity: 'warning',
     status: 'success',
   },
@@ -493,10 +519,21 @@ export const INITIAL_ADMINS: AdminAccount[] = [
     name: 'Super Admin',
     email: 'superadmin@healthdastaan.com',
     role: 'super_admin',
-    additionalRoles: ['api_control_admin', 'compliance_admin', 'verification_admin', 'support_admin'],
+    additionalRoles: [
+      'api_control_admin',
+      'compliance_admin',
+      'verification_admin',
+      'support_admin',
+    ],
     department: 'Executive Engineering & Governance',
     status: 'active',
-    privileges: ['ALL_PERMISSIONS', 'MANAGE_ADMINS', 'TOGGLE_CRITICAL_APIS', 'BLOCK_USERS', 'VERIFY_DOCTORS'],
+    privileges: [
+      'ALL_PERMISSIONS',
+      'MANAGE_ADMINS',
+      'TOGGLE_CRITICAL_APIS',
+      'BLOCK_USERS',
+      'VERIFY_DOCTORS',
+    ],
     createdAt: '2025-08-01T00:00:00Z',
     lastLoginAt: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
     createdByAdminName: 'System Bootstrap',

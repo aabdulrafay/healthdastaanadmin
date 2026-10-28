@@ -12,22 +12,17 @@ import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/hooks/useAuth';
 import { userService } from '@/services/userService';
 import { auditService } from '@/services/auditService';
-import { User, UserStatus } from '@/types/user';
+import { User } from '@/types/user';
 import { formatDate, formatTimeAgo, getInitials } from '@/lib/utils';
 import {
-  Users,
-  Search,
-  Filter,
   Eye,
   Ban,
   Clock,
   CheckCircle,
   KeyRound,
   ShieldAlert,
-  Calendar,
   Phone,
   Mail,
-  Stethoscope,
   Laptop,
 } from 'lucide-react';
 
@@ -83,7 +78,10 @@ export default function UserManagementPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleOpenAction = (type: 'block' | 'suspend' | 'activate' | 'revoke_sessions', targetUser: User) => {
+  const handleOpenAction = (
+    type: 'block' | 'suspend' | 'activate' | 'revoke_sessions',
+    targetUser: User
+  ) => {
     setActionDialog({
       isOpen: true,
       type,
@@ -118,7 +116,10 @@ export default function UserManagementPage() {
           metadata: { reason },
         });
 
-        success('User Blocked', `${targetUser.fullName} has been blocked from accessing the platform.`);
+        success(
+          'User Blocked',
+          `${targetUser.fullName} has been blocked from accessing the platform.`
+        );
       } else if (actionDialog.type === 'suspend') {
         const suspendedUntil = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(); // 14 days
         const updated = await userService.updateUserStatus(
@@ -212,7 +213,8 @@ export default function UserManagementPage() {
               User Directory & Session Governance
             </h2>
             <p className="text-xs text-[#737781] mt-0.5">
-              Manage patient identities, clinician credentials, account restrictions, and security tokens
+              Manage patient identities, clinician credentials, account restrictions, and security
+              tokens
             </p>
           </div>
 
@@ -315,10 +317,7 @@ export default function UserManagementPage() {
                     const isSuspended = user.status === 'suspended';
 
                     return (
-                      <tr
-                        key={user.id}
-                        className="hover:bg-[#F7F9FF]/70 transition-colors group"
-                      >
+                      <tr key={user.id} className="hover:bg-[#F7F9FF]/70 transition-colors group">
                         {/* User & Contact */}
                         <td className="py-3.5 px-5">
                           <div className="flex items-center gap-3">
@@ -362,10 +361,10 @@ export default function UserManagementPage() {
                             {user.verificationStatus === 'verified'
                               ? 'Verified'
                               : user.verificationStatus === 'pending'
-                              ? 'Pending Review'
-                              : user.verificationStatus === 'rejected'
-                              ? 'Rejected'
-                              : 'Standard'}
+                                ? 'Pending Review'
+                                : user.verificationStatus === 'rejected'
+                                  ? 'Rejected'
+                                  : 'Standard'}
                           </Badge>
                         </td>
 
@@ -599,7 +598,9 @@ export default function UserManagementPage() {
                 <div className="p-3 rounded-lg border border-slate-100 bg-slate-50 space-y-1">
                   <span className="text-[#737781] block">Account Role</span>
                   <span className="font-bold text-[#002654] capitalize text-sm">
-                    {selectedUser.role === 'both' ? 'Dual Role (Doctor + Patient)' : selectedUser.role}
+                    {selectedUser.role === 'both'
+                      ? 'Dual Role (Doctor + Patient)'
+                      : selectedUser.role}
                   </span>
                 </div>
 
@@ -637,13 +638,19 @@ export default function UserManagementPage() {
                 </div>
 
                 {selectedUser.activeSessionsCount === 0 ? (
-                  <p className="text-xs text-[#737781]">No active terminal or mobile sessions detected.</p>
+                  <p className="text-xs text-[#737781]">
+                    No active terminal or mobile sessions detected.
+                  </p>
                 ) : (
                   <div className="space-y-2 text-xs">
                     <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
                       <div>
-                        <p className="font-semibold text-[#121D27]">Chrome 122 on Windows 11 (Desktop)</p>
-                        <p className="text-[11px] text-slate-500">IP: 182.185.122.90 • Islamabad, PK</p>
+                        <p className="font-semibold text-[#121D27]">
+                          Chrome 122 on Windows 11 (Desktop)
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          IP: 182.185.122.90 • Islamabad, PK
+                        </p>
                       </div>
                       <Badge variant="active" size="sm" dot>
                         Online
@@ -666,37 +673,37 @@ export default function UserManagementPage() {
             actionDialog.type === 'block'
               ? 'danger'
               : actionDialog.type === 'suspend'
-              ? 'warning'
-              : actionDialog.type === 'revoke_sessions'
-              ? 'warning'
-              : 'info'
+                ? 'warning'
+                : actionDialog.type === 'revoke_sessions'
+                  ? 'warning'
+                  : 'info'
           }
           title={
             actionDialog.type === 'block'
               ? `Block User: ${actionDialog.user?.fullName}`
               : actionDialog.type === 'suspend'
-              ? `Suspend User: ${actionDialog.user?.fullName}`
-              : actionDialog.type === 'revoke_sessions'
-              ? `Revoke Sessions: ${actionDialog.user?.fullName}`
-              : `Re-activate User: ${actionDialog.user?.fullName}`
+                ? `Suspend User: ${actionDialog.user?.fullName}`
+                : actionDialog.type === 'revoke_sessions'
+                  ? `Revoke Sessions: ${actionDialog.user?.fullName}`
+                  : `Re-activate User: ${actionDialog.user?.fullName}`
           }
           description={
             actionDialog.type === 'block'
               ? `Are you sure you want to block ${actionDialog.user?.fullName}? This user will be immediately evicted from all active sessions and denied access to HealthDastaan services.`
               : actionDialog.type === 'suspend'
-              ? `Suspending ${actionDialog.user?.fullName} will temporarily disable login and teleconsultation bookings for 14 days.`
-              : actionDialog.type === 'revoke_sessions'
-              ? `This will invalidate all refresh tokens and JWT access keys for ${actionDialog.user?.fullName}. The user will be required to log in again on all devices.`
-              : `Restore ${actionDialog.user?.fullName} to active status? The user will regain access to their account immediately.`
+                ? `Suspending ${actionDialog.user?.fullName} will temporarily disable login and teleconsultation bookings for 14 days.`
+                : actionDialog.type === 'revoke_sessions'
+                  ? `This will invalidate all refresh tokens and JWT access keys for ${actionDialog.user?.fullName}. The user will be required to log in again on all devices.`
+                  : `Restore ${actionDialog.user?.fullName} to active status? The user will regain access to their account immediately.`
           }
           confirmLabel={
             actionDialog.type === 'block'
               ? 'Block User'
               : actionDialog.type === 'suspend'
-              ? 'Suspend User'
-              : actionDialog.type === 'revoke_sessions'
-              ? 'Revoke Sessions'
-              : 'Activate User'
+                ? 'Suspend User'
+                : actionDialog.type === 'revoke_sessions'
+                  ? 'Revoke Sessions'
+                  : 'Activate User'
           }
           requireReason={actionDialog.type === 'block' || actionDialog.type === 'suspend'}
           reasonPlaceholder={

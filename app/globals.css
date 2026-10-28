@@ -1,9 +1,9 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @layer base {
   :root {
     --font-jakarta: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    
+
     /* Design Tokens: Clinical Vitality */
     --clinical-surface: #f7f9ff;
     --clinical-surface-dim: #d0dbe9;
@@ -15,28 +15,28 @@
     --clinical-surface-highest: #d8e4f2;
     --clinical-on-surface: #121d27;
     --clinical-on-surface-variant: #434750;
-    
+
     --clinical-primary: #002654;
     --clinical-primary-navy: #0b3c78;
     --clinical-primary-container: #1f3d6b;
     --clinical-on-primary: #ffffff;
     --clinical-on-primary-container: #8da8de;
-    
+
     --clinical-secondary: #006b5f;
     --clinical-secondary-cyan: #00a896;
     --clinical-secondary-aqua: #0ed2b0;
     --clinical-secondary-container: #9cefdf;
-    
+
     --clinical-tertiary: #002e1c;
     --clinical-tertiary-emerald: #00875a;
     --clinical-tertiary-leaf: #10b981;
     --clinical-tertiary-container: #1b4531;
-    
+
     --clinical-error: #ba1a1a;
     --clinical-error-container: #ffdad6;
     --clinical-warning: #b45309;
     --clinical-warning-container: #fef3c7;
-    
+
     --clinical-outline: #737781;
     --clinical-outline-variant: #c3c6d1;
     --clinical-border: rgba(11, 60, 120, 0.08);

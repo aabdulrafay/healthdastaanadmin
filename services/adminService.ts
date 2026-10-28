@@ -2,7 +2,7 @@ import { AdminAccount, CreateAdminPayload, UpdateAdminPayload } from '@/types/ad
 import { INITIAL_ADMINS } from '@/lib/mockData';
 import { apiClient } from './apiClient';
 
-let adminsCache: AdminAccount[] = [...INITIAL_ADMINS];
+const adminsCache: AdminAccount[] = [...INITIAL_ADMINS];
 
 export const adminService = {
   async getAdmins(): Promise<AdminAccount[]> {
@@ -14,7 +14,10 @@ export const adminService = {
     }
   },
 
-  async createAdmin(payload: CreateAdminPayload, creatorName = 'Super Admin'): Promise<AdminAccount> {
+  async createAdmin(
+    payload: CreateAdminPayload,
+    creatorName = 'Super Admin'
+  ): Promise<AdminAccount> {
     try {
       const res = await apiClient<{ admin: AdminAccount }>('/admin/governance/admins', {
         method: 'POST',

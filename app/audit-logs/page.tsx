@@ -11,18 +11,7 @@ import { useToast } from '@/hooks/useToast';
 import { auditService } from '@/services/auditService';
 import { AuditLog, AuditSeverity } from '@/types/audit';
 import { formatDate, formatTimeAgo } from '@/lib/utils';
-import {
-  ShieldCheck,
-  Download,
-  Filter,
-  Eye,
-  Terminal,
-  FileSpreadsheet,
-  AlertTriangle,
-  Info,
-  Calendar,
-  UserCheck,
-} from 'lucide-react';
+import { Download, Eye, Terminal } from 'lucide-react';
 
 export default function AuditLogsPage() {
   const { success, error: toastError } = useToast();
@@ -63,7 +52,16 @@ export default function AuditLogsPage() {
   const handleExportCsv = () => {
     if (logs.length === 0) return;
 
-    const headers = ['ID', 'Timestamp', 'Actor Name', 'Actor Email', 'Action', 'Target Resource', 'Severity', 'Description'];
+    const headers = [
+      'ID',
+      'Timestamp',
+      'Actor Name',
+      'Actor Email',
+      'Action',
+      'Target Resource',
+      'Severity',
+      'Description',
+    ];
     const rows = logs.map((l) => [
       l.id,
       l.timestamp,
@@ -75,11 +73,16 @@ export default function AuditLogsPage() {
       `"${l.description.replace(/"/g, '""')}"`,
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `HealthDastaan_Audit_Logs_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute(
+      'download',
+      `HealthDastaan_Audit_Logs_${new Date().toISOString().slice(0, 10)}.csv`
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -87,7 +90,10 @@ export default function AuditLogsPage() {
     success('Audit Export Generated', 'Downloaded compliance CSV report successfully.');
   };
 
-  const getActionBadgeVariant = (action: string, severity: AuditSeverity) => {
+  const getActionBadgeVariant = (
+    action: string,
+    severity: AuditSeverity
+  ): 'red' | 'amber' | 'emerald' | 'blue' => {
     if (severity === 'critical' || action.includes('BLOCKED') || action.includes('REJECTED')) {
       return 'red';
     }
@@ -110,11 +116,15 @@ export default function AuditLogsPage() {
               Regulatory Audit Logs & Event Trace
             </h2>
             <p className="text-xs text-[#737781] mt-0.5">
-              Cryptographically timestamped compliance records for clinical security and HIPAA/GDPR governance
+              Cryptographically timestamped compliance records for clinical security and HIPAA/GDPR
+              governance
             </p>
           </div>
 
           <div className="flex items-center gap-2.5">
+            <span className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-[#002654] shadow-sm">
+              Total Events: <strong className="text-[#00A896]">{totalCount}</strong>
+            </span>
             <Button
               variant="outline"
               size="sm"
@@ -144,7 +154,10 @@ export default function AuditLogsPage() {
                 { label: 'AUTH_LOGIN (Admin Logins)', value: 'AUTH_LOGIN' },
                 { label: 'USER_BLOCKED (Account Blocks)', value: 'USER_BLOCKED' },
                 { label: 'USER_SUSPENDED', value: 'USER_SUSPENDED' },
-                { label: 'VERIFICATION_APPROVED (Doctor Clearances)', value: 'VERIFICATION_APPROVED' },
+                {
+                  label: 'VERIFICATION_APPROVED (Doctor Clearances)',
+                  value: 'VERIFICATION_APPROVED',
+                },
                 { label: 'VERIFICATION_REJECTED', value: 'VERIFICATION_REJECTED' },
                 { label: 'FEATURE_FLAG_DISABLED (API Outages)', value: 'FEATURE_FLAG_DISABLED' },
                 { label: 'ALL_SESSIONS_REVOKED (Session Resets)', value: 'ALL_SESSIONS_REVOKED' },
@@ -199,19 +212,20 @@ export default function AuditLogsPage() {
                     const variant = getActionBadgeVariant(log.action, log.severity);
 
                     return (
-                      <tr
-                        key={log.id}
-                        className="hover:bg-[#F7F9FF]/80 transition-colors group"
-                      >
+                      <tr key={log.id} className="hover:bg-[#F7F9FF]/80 transition-colors group">
                         {/* Timestamp */}
                         <td className="py-3 px-5 whitespace-nowrap">
-                          <p className="font-semibold text-[#121D27]">{formatDate(log.timestamp)}</p>
-                          <p className="text-[10px] text-[#737781]">{formatTimeAgo(log.timestamp)}</p>
+                          <p className="font-semibold text-[#121D27]">
+                            {formatDate(log.timestamp)}
+                          </p>
+                          <p className="text-[10px] text-[#737781]">
+                            {formatTimeAgo(log.timestamp)}
+                          </p>
                         </td>
 
                         {/* Action Badge */}
                         <td className="py-3 px-4 whitespace-nowrap">
-                          <Badge variant={variant as any} size="sm">
+                          <Badge variant={variant} size="sm">
                             {log.action}
                           </Badge>
                         </td>
@@ -220,7 +234,9 @@ export default function AuditLogsPage() {
                         <td className="py-3 px-4 whitespace-nowrap">
                           <p className="font-bold text-[#121D27]">{log.actor.name}</p>
                           <p className="text-[10px] text-[#737781]">{log.actor.email}</p>
-                          <p className="text-[10px] font-mono text-slate-400">IP: {log.actor.ipAddress}</p>
+                          <p className="text-[10px] font-mono text-slate-400">
+                            IP: {log.actor.ipAddress}
+                          </p>
                         </td>
 
                         {/* Target Resource */}
@@ -237,8 +253,8 @@ export default function AuditLogsPage() {
                               log.severity === 'critical'
                                 ? 'text-[#BA1A1A]'
                                 : log.severity === 'warning'
-                                ? 'text-amber-700'
-                                : 'text-[#00875A]'
+                                  ? 'text-amber-700'
+                                  : 'text-[#00875A]'
                             }`}
                           >
                             <span
@@ -246,8 +262,8 @@ export default function AuditLogsPage() {
                                 log.severity === 'critical'
                                   ? 'bg-[#BA1A1A]'
                                   : log.severity === 'warning'
-                                  ? 'bg-amber-500'
-                                  : 'bg-[#00875A]'
+                                    ? 'bg-amber-500'
+                                    : 'bg-[#00875A]'
                               }`}
                             />
                             {log.severity}
@@ -298,7 +314,7 @@ export default function AuditLogsPage() {
               <div className="p-4 rounded-xl bg-[#F7F9FF] border border-slate-200 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-sm text-[#002654]">{inspectLog.action}</span>
-                  <Badge variant={getActionBadgeVariant(inspectLog.action, inspectLog.severity) as any}>
+                  <Badge variant={getActionBadgeVariant(inspectLog.action, inspectLog.severity)}>
                     {inspectLog.severity.toUpperCase()}
                   </Badge>
                 </div>
@@ -314,12 +330,16 @@ export default function AuditLogsPage() {
                   <span className="text-[#737781] block">Actor Identity</span>
                   <p className="font-bold text-[#121D27]">{inspectLog.actor.name}</p>
                   <p className="text-[11px] text-slate-500">{inspectLog.actor.email}</p>
-                  <p className="text-[11px] text-[#006B5F] font-semibold">{inspectLog.actor.role}</p>
+                  <p className="text-[11px] text-[#006B5F] font-semibold">
+                    {inspectLog.actor.role}
+                  </p>
                 </div>
 
                 <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
                   <span className="text-[#737781] block">Network Origin</span>
-                  <p className="font-mono font-bold text-[#002654]">IP: {inspectLog.actor.ipAddress}</p>
+                  <p className="font-mono font-bold text-[#002654]">
+                    IP: {inspectLog.actor.ipAddress}
+                  </p>
                   <p className="text-[10px] text-slate-500 truncate">
                     UA: {inspectLog.actor.userAgent || 'Clinical Client Console'}
                   </p>

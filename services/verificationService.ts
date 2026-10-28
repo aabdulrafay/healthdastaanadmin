@@ -1,15 +1,16 @@
-import { PractitionerApplication, ApplicationStatus } from '@/types/verification';
+import { PractitionerApplication } from '@/types/verification';
 import { INITIAL_VERIFICATIONS } from '@/lib/mockData';
 import { apiClient } from './apiClient';
 
-let verificationsCache: PractitionerApplication[] = [...INITIAL_VERIFICATIONS];
+const verificationsCache: PractitionerApplication[] = [...INITIAL_VERIFICATIONS];
 
 export const verificationService = {
   async getApplications(statusFilter?: string): Promise<PractitionerApplication[]> {
     try {
-      const endpoint = statusFilter && statusFilter !== 'all'
-        ? `/admin/practitioner-verifications?status=${statusFilter}`
-        : '/admin/practitioner-verifications';
+      const endpoint =
+        statusFilter && statusFilter !== 'all'
+          ? `/admin/practitioner-verifications?status=${statusFilter}`
+          : '/admin/practitioner-verifications';
       const res = await apiClient<{ applications: PractitionerApplication[] }>(endpoint);
       return res.applications;
     } catch {
@@ -65,7 +66,8 @@ export const verificationService = {
   async rejectApplication(
     id: string,
     reason: string,
-    category: 'invalid_pmdc' | 'expired_credentials' | 'name_mismatch' | 'forged_document' | 'other',
+    category:
+      'invalid_pmdc' | 'expired_credentials' | 'name_mismatch' | 'forged_document' | 'other',
     adminName: string
   ): Promise<PractitionerApplication> {
     try {

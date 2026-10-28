@@ -1,9 +1,5 @@
 export type AdminRole =
-  | 'super_admin'
-  | 'verification_admin'
-  | 'support_admin'
-  | 'compliance_admin'
-  | 'api_control_admin';
+  'super_admin' | 'verification_admin' | 'support_admin' | 'compliance_admin' | 'api_control_admin';
 
 export interface AdminUser {
   id: string;

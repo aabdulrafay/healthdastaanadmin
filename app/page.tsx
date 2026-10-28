@@ -15,20 +15,16 @@ import { PractitionerApplication } from '@/types/verification';
 import { FeatureFlag } from '@/types/featureFlag';
 import { AuditLog } from '@/types/audit';
 import { useAuth } from '@/hooks/useAuth';
-import { formatTimeAgo, formatDate } from '@/lib/utils';
+import { formatTimeAgo } from '@/lib/utils';
 import {
   Users,
   Stethoscope,
   ShieldAlert,
   Sliders,
   ArrowRight,
-  CheckCircle2,
-  AlertTriangle,
   Activity,
   Server,
-  Zap,
   Clock,
-  ExternalLink,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -37,7 +33,7 @@ export default function DashboardPage() {
   const [verifications, setVerifications] = useState<PractitionerApplication[]>([]);
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -69,7 +65,9 @@ export default function DashboardPage() {
   const doctorCount = users.filter((u) => u.role === 'practitioner' || u.role === 'both').length;
   const dualRoleCount = users.filter((u) => u.role === 'both').length;
   const pendingVerifications = verifications.filter((v) => v.status === 'pending');
-  const blockedCount = users.filter((u) => u.status === 'blocked' || u.status === 'suspended').length;
+  const blockedCount = users.filter(
+    (u) => u.status === 'blocked' || u.status === 'suspended'
+  ).length;
   const activeFlagsCount = flags.filter((f) => f.isEnabled).length;
 
   return (
@@ -92,7 +90,8 @@ export default function DashboardPage() {
               <p className="text-xs sm:text-sm text-[#CADBF9] max-w-xl leading-relaxed">
                 Platform operations are running in high-availability mode. You have{' '}
                 <strong className="text-white underline font-semibold">
-                  {pendingVerifications.length} doctor credential application{pendingVerifications.length === 1 ? '' : 's'}
+                  {pendingVerifications.length} doctor credential application
+                  {pendingVerifications.length === 1 ? '' : 's'}
                 </strong>{' '}
                 awaiting PMDC verification and clinical review.
               </p>
@@ -314,10 +313,17 @@ export default function DashboardPage() {
 
               <div className="space-y-3.5">
                 {auditLogs.slice(0, 5).map((log) => (
-                  <div key={log.id} className="text-xs space-y-1 border-b border-slate-50 pb-3 last:border-0 last:pb-0">
+                  <div
+                    key={log.id}
+                    className="text-xs space-y-1 border-b border-slate-50 pb-3 last:border-0 last:pb-0"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#121D27]">{log.action.replace(/_/g, ' ')}</span>
-                      <span className="text-[11px] text-[#737781]">{formatTimeAgo(log.timestamp)}</span>
+                      <span className="font-bold text-[#121D27]">
+                        {log.action.replace(/_/g, ' ')}
+                      </span>
+                      <span className="text-[11px] text-[#737781]">
+                        {formatTimeAgo(log.timestamp)}
+                      </span>
                     </div>
                     <p className="text-[#434750] line-clamp-2 leading-relaxed">{log.description}</p>
                     <div className="flex items-center gap-2 pt-0.5">

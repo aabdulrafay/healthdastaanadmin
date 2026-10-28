@@ -35,9 +35,7 @@ export function Switch({
               {label}
             </label>
           )}
-          {description && (
-            <p className="text-xs text-[#434750] mt-0.5">{description}</p>
-          )}
+          {description && <p className="text-xs text-[#434750] mt-0.5">{description}</p>}
         </div>
       )}
       <button

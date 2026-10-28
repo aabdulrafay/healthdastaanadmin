@@ -6,9 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Activity, Lock, Mail, Eye, EyeOff, ShieldAlert, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Activity, Lock, Mail, Eye, EyeOff, ShieldAlert, Sparkles } from 'lucide-react';
 import { DEFAULT_SUPERADMIN } from '@/lib/constants';
-import { DEMO_ADMIN_ACCOUNTS } from '@/services/authService';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -23,8 +22,10 @@ export default function LoginPage() {
   const { success, error: toastError } = useToast();
   const router = useRouter();
 
-  const handleLogin = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
     setErrorMessage('');
     setIsAccessDenied(false);
 
@@ -100,9 +101,7 @@ export default function LoginPage() {
               <ShieldAlert className="w-5 h-5 text-[#BA1A1A] shrink-0 mt-0.5" />
               <div className="text-xs">
                 <p className="font-bold text-[#BA1A1A]">Access Denied</p>
-                <p className="mt-0.5 text-red-700 leading-relaxed">
-                  {errorMessage}
-                </p>
+                <p className="mt-0.5 text-red-700 leading-relaxed">{errorMessage}</p>
               </div>
             </div>
           )}
@@ -115,7 +114,14 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form className="space-y-5" onSubmit={handleLogin}>
+          <form
+            className="space-y-5"
+            action="javascript:void(0);"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleLogin(e);
+            }}
+          >
             <Input
               label="Administrator Email"
               type="email"
@@ -169,6 +175,10 @@ export default function LoginPage() {
               size="lg"
               className="w-full font-bold shadow-md shadow-[#002654]/15"
               isLoading={isSubmitting}
+              onClick={(e) => {
+                e.preventDefault();
+                void handleLogin(e);
+              }}
             >
               Sign In to Console
             </Button>
@@ -185,27 +195,39 @@ export default function LoginPage() {
               {/* Default Super Admin */}
               <button
                 type="button"
-                onClick={() => handleQuickFill(DEFAULT_SUPERADMIN.email, DEFAULT_SUPERADMIN.password)}
+                onClick={() =>
+                  handleQuickFill(DEFAULT_SUPERADMIN.email, DEFAULT_SUPERADMIN.password)
+                }
                 className="w-full text-left p-2.5 rounded-lg border border-slate-200 hover:border-[#002654] hover:bg-[#EDF4FF] transition-all flex items-center justify-between group"
               >
                 <div>
                   <p className="font-semibold text-[#002654]">👑 Super Admin (Full Governance)</p>
                   <p className="text-[11px] text-slate-500 font-mono">{DEFAULT_SUPERADMIN.email}</p>
                 </div>
-                <span className="text-[10px] font-bold text-[#00A896] group-hover:underline">Fill</span>
+                <span className="text-[10px] font-bold text-[#00A896] group-hover:underline">
+                  Fill
+                </span>
               </button>
 
               {/* Verification Admin */}
               <button
                 type="button"
-                onClick={() => handleQuickFill('shahzad.verification@healthdastaan.com', 'admin123')}
+                onClick={() =>
+                  handleQuickFill('shahzad.verification@healthdastaan.com', 'admin123')
+                }
                 className="w-full text-left p-2 rounded-lg border border-slate-200 hover:border-[#00A896] hover:bg-slate-50 transition-all flex items-center justify-between group"
               >
                 <div>
-                  <p className="font-semibold text-[#121D27]">🩺 Verification Admin (Doctor Credentials)</p>
-                  <p className="text-[11px] text-slate-500 font-mono">shahzad.verification@healthdastaan.com</p>
+                  <p className="font-semibold text-[#121D27]">
+                    🩺 Verification Admin (Doctor Credentials)
+                  </p>
+                  <p className="text-[11px] text-slate-500 font-mono">
+                    shahzad.verification@healthdastaan.com
+                  </p>
                 </div>
-                <span className="text-[10px] font-bold text-[#00A896] group-hover:underline">Fill</span>
+                <span className="text-[10px] font-bold text-[#00A896] group-hover:underline">
+                  Fill
+                </span>
               </button>
 
               {/* Support Admin */}
@@ -215,10 +237,16 @@ export default function LoginPage() {
                 className="w-full text-left p-2 rounded-lg border border-slate-200 hover:border-[#00A896] hover:bg-slate-50 transition-all flex items-center justify-between group"
               >
                 <div>
-                  <p className="font-semibold text-[#121D27]">👥 Support Admin (User Management & Sessions)</p>
-                  <p className="text-[11px] text-slate-500 font-mono">sarah.support@healthdastaan.com</p>
+                  <p className="font-semibold text-[#121D27]">
+                    👥 Support Admin (User Management & Sessions)
+                  </p>
+                  <p className="text-[11px] text-slate-500 font-mono">
+                    sarah.support@healthdastaan.com
+                  </p>
                 </div>
-                <span className="text-[10px] font-bold text-[#00A896] group-hover:underline">Fill</span>
+                <span className="text-[10px] font-bold text-[#00A896] group-hover:underline">
+                  Fill
+                </span>
               </button>
 
               {/* Regular Patient / Non-Admin (Tests Access Denied) */}
@@ -229,9 +257,13 @@ export default function LoginPage() {
               >
                 <div>
                   <p className="font-semibold text-red-800">🚫 Regular Patient Account</p>
-                  <p className="text-[11px] text-red-600 font-mono">sana.tariq@gmail.com (Test Access Denied)</p>
+                  <p className="text-[11px] text-red-600 font-mono">
+                    sana.tariq@gmail.com (Test Access Denied)
+                  </p>
                 </div>
-                <span className="text-[10px] font-bold text-red-700 group-hover:underline">Test</span>
+                <span className="text-[10px] font-bold text-red-700 group-hover:underline">
+                  Test
+                </span>
               </button>
             </div>
           </div>
@@ -239,7 +271,8 @@ export default function LoginPage() {
 
         {/* Security Policy Footer */}
         <p className="mt-6 text-center text-xs text-[#737781]">
-          Protected by enterprise-grade TLS 1.3 & role-based access control. All administrative actions are permanently recorded in system audit logs.
+          Protected by enterprise-grade TLS 1.3 & role-based access control. All administrative
+          actions are permanently recorded in system audit logs.
         </p>
       </div>
     </div>

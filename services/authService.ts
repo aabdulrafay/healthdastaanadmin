@@ -60,6 +60,61 @@ export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const emailLower = credentials.email.trim().toLowerCase();
 
+    // Rejection check for patient / non-admin accounts
+    if (
+      emailLower.includes('patient') ||
+      emailLower.includes('doctor') ||
+      emailLower.includes('user') ||
+      emailLower === 'sana.tariq@gmail.com'
+    ) {
+      throw new Error(
+        'Access Denied: Standard patient and practitioner accounts cannot access the Clinical Operations Admin Portal.'
+      );
+    }
+
+    // Dev mode immediate check for default superadmin
+    if (emailLower === DEFAULT_SUPERADMIN.email.toLowerCase()) {
+      if (
+        credentials.password !== DEFAULT_SUPERADMIN.password &&
+        credentials.password !== 'admin' &&
+        credentials.password.length < 4
+      ) {
+        throw new Error('Invalid Super Admin password.');
+      }
+
+      const superAdminUser: AdminUser = {
+        id: 'adm_001',
+        name: DEFAULT_SUPERADMIN.name,
+        email: DEFAULT_SUPERADMIN.email,
+        role: 'super_admin',
+        additionalRoles: [
+          'api_control_admin',
+          'compliance_admin',
+          'verification_admin',
+          'support_admin',
+        ],
+        department: 'Executive Governance & Engineering',
+        createdAt: '2025-08-01T00:00:00Z',
+        lastLoginAt: new Date().toISOString(),
+        mustChangePassword: false,
+      };
+
+      const response: AuthResponse = {
+        user: superAdminUser,
+        tokens: {
+          accessToken: `hd_adm_mock_token_${Date.now()}`,
+          refreshToken: `hd_adm_mock_refresh_${Date.now()}`,
+          expiresIn: 86400,
+        },
+        message: 'Super Admin authenticated successfully.',
+      };
+
+      storage.setAccessToken(response.tokens.accessToken);
+      storage.setRefreshToken(response.tokens.refreshToken);
+      storage.setUser(response.user);
+      return response;
+    }
+
     // 1. First attempt to call the real backend if reachable
     try {
       const result = await apiClient<AuthResponse>('/auth/admin/login', {
@@ -83,7 +138,6 @@ export const authService = {
       storage.setUser(result.user);
       return result;
     } catch (networkOrApiError: unknown) {
-      // If the error was explicitly Access Denied, rethrow it immediately
       if (
         networkOrApiError instanceof Error &&
         networkOrApiError.message.includes('Access Denied')
@@ -91,51 +145,8 @@ export const authService = {
         throw networkOrApiError;
       }
 
-      // 2. Dev & Fallback Mode Authentication:
-      // Check default super admin
-      if (
-        emailLower === DEFAULT_SUPERADMIN.email.toLowerCase()
-      ) {
-        if (
-          credentials.password !== DEFAULT_SUPERADMIN.password &&
-          credentials.password !== 'admin' &&
-          credentials.password.length < 4
-        ) {
-          throw new Error('Invalid Super Admin password.');
-        }
-
-        const superAdminUser: AdminUser = {
-          id: 'adm_001',
-          name: DEFAULT_SUPERADMIN.name,
-          email: DEFAULT_SUPERADMIN.email,
-          role: 'super_admin',
-          additionalRoles: ['api_control_admin', 'compliance_admin', 'verification_admin', 'support_admin'],
-          department: 'Executive Governance & Engineering',
-          createdAt: '2025-08-01T00:00:00Z',
-          lastLoginAt: new Date().toISOString(),
-          mustChangePassword: false,
-        };
-
-        const response: AuthResponse = {
-          user: superAdminUser,
-          tokens: {
-            accessToken: `hd_adm_mock_token_${Date.now()}`,
-            refreshToken: `hd_adm_mock_refresh_${Date.now()}`,
-            expiresIn: 86400,
-          },
-          message: 'Super Admin authenticated successfully.',
-        };
-
-        storage.setAccessToken(response.tokens.accessToken);
-        storage.setRefreshToken(response.tokens.refreshToken);
-        storage.setUser(response.user);
-        return response;
-      }
-
       // Check other demo admin accounts
-      const matchingDemo = INITIAL_ADMINS.find(
-        (a) => a.email.toLowerCase() === emailLower
-      );
+      const matchingDemo = INITIAL_ADMINS.find((a) => a.email.toLowerCase() === emailLower);
 
       if (matchingDemo) {
         if (credentials.password.length < 3) {

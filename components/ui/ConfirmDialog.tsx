@@ -93,7 +93,13 @@ export function ConfirmDialog({
       }
     >
       <div className="space-y-4">
-        <div className={cn('p-4 rounded-xl border flex items-start gap-3.5', iconConfig.bg, iconConfig.border)}>
+        <div
+          className={cn(
+            'p-4 rounded-xl border flex items-start gap-3.5',
+            iconConfig.bg,
+            iconConfig.border
+          )}
+        >
           <div className="shrink-0 mt-0.5">{iconConfig.icon}</div>
           <p className="text-sm text-[#121D27] leading-relaxed">{description}</p>
         </div>

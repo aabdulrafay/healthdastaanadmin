@@ -38,7 +38,12 @@ export default function AccessDeniedPage() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link href="/" className="w-full sm:w-auto">
-            <Button variant="primary" size="md" className="w-full" leftIcon={<ArrowLeft className="w-4 h-4" />}>
+            <Button
+              variant="primary"
+              size="md"
+              className="w-full"
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
+            >
               Dashboard
             </Button>
           </Link>

@@ -3,7 +3,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { Menu, Activity, Shield, Bell } from 'lucide-react';
+import { Menu, Activity, Shield } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 
 interface HeaderProps {
@@ -62,9 +62,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           <h1 className="text-base sm:text-lg font-bold text-[#002654] tracking-tight">
             {currentMeta.title}
           </h1>
-          <p className="hidden sm:block text-xs text-[#737781]">
-            {currentMeta.subtitle}
-          </p>
+          <p className="hidden sm:block text-xs text-[#737781]">{currentMeta.subtitle}</p>
         </div>
       </div>
 
@@ -92,9 +90,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             {user?.name ? getInitials(user.name) : 'AD'}
           </div>
           <div className="hidden xl:block text-left">
-            <p className="text-xs font-bold text-[#121D27] leading-none">
-              {user?.name || 'Admin'}
-            </p>
+            <p className="text-xs font-bold text-[#121D27] leading-none">{user?.name || 'Admin'}</p>
             <p className="text-[10px] text-[#737781] capitalize mt-0.5">
               {user?.role.replace('_', ' ')}
             </p>

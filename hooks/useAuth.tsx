@@ -1,7 +1,14 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from 'react';
+import { useRouter } from 'next/navigation';
 import { AdminRole, AdminUser, LoginCredentials } from '@/types/auth';
 import { authService } from '@/services/authService';
 import { storage } from '@/lib/storage';
@@ -24,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   const initAuth = useCallback(() => {
     try {

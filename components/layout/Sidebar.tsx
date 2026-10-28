@@ -115,9 +115,7 @@ export function Sidebar({ isOpen, onClose, pendingVerificationsCount = 2 }: Side
                 : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
             const badgeCount =
-              item.badgeCountKey === 'pendingVerifications'
-                ? pendingVerificationsCount
-                : null;
+              item.badgeCountKey === 'pendingVerifications' ? pendingVerificationsCount : null;
 
             return (
               <Link
@@ -140,9 +138,7 @@ export function Sidebar({ isOpen, onClose, pendingVerificationsCount = 2 }: Side
                 <div className="flex items-center gap-3 pl-1">
                   <span
                     className={
-                      isActive
-                        ? 'text-[#0ED2B0]'
-                        : 'text-slate-400 group-hover:text-white'
+                      isActive ? 'text-[#0ED2B0]' : 'text-slate-400 group-hover:text-white'
                     }
                   >
                     {getIcon(item.iconName)}

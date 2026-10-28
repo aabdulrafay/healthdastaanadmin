@@ -1,22 +1,22 @@
-import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "@/hooks/useAuth";
-import { ToastProvider } from "@/hooks/useToast";
+import type { Metadata } from 'next';
+import { Plus_Jakarta_Sans } from 'next/font/google';
+import './globals.css';
+import { AuthProvider } from '@/hooks/useAuth';
+import { ToastProvider } from '@/hooks/useToast';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  display: "swap",
+  variable: '--font-jakarta',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "HealthDastaan Admin | Clinical Operations & System Governance",
+  title: 'HealthDastaan Admin | Clinical Operations & System Governance',
   description:
-    "Enterprise Clinical Administration Portal for HealthDastaan - User Lifecycle, Practitioner Verification, Feature Flags & Audit Governance",
+    'Enterprise Clinical Administration Portal for HealthDastaan - User Lifecycle, Practitioner Verification, Feature Flags & Audit Governance',
   icons: {
-    icon: "/favicon.ico",
+    icon: '/favicon.ico',
   },
 };
 

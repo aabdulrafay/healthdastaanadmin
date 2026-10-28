@@ -41,7 +41,8 @@ export interface PractitionerApplication {
   reviewedByAdminId?: string;
   reviewedByAdminName?: string;
   rejectionReason?: string;
-  rejectionCategory?: 'invalid_pmdc' | 'expired_credentials' | 'name_mismatch' | 'forged_document' | 'other';
+  rejectionCategory?:
+    'invalid_pmdc' | 'expired_credentials' | 'name_mismatch' | 'forged_document' | 'other';
   documents: CredentialDocument[];
   notes?: string;
 }

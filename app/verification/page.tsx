@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { Modal } from '@/components/ui/Modal';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/hooks/useAuth';
 import { verificationService } from '@/services/verificationService';
@@ -14,16 +13,10 @@ import { auditService } from '@/services/auditService';
 import { PractitionerApplication, CredentialDocument } from '@/types/verification';
 import { formatDate, formatTimeAgo, formatFileSize, getInitials } from '@/lib/utils';
 import {
-  Stethoscope,
-  FileCheck,
-  FileX,
   FileText,
   Building2,
-  GraduationCap,
-  Award,
   CheckCircle2,
   XCircle,
-  ExternalLink,
   ShieldCheck,
   AlertTriangle,
   Clock,
@@ -36,13 +29,17 @@ export default function VerificationPage() {
 
   const [applications, setApplications] = useState<PractitionerApplication[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusTab, setStatusTab] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
+  const [statusTab, setStatusTab] = useState<'pending' | 'approved' | 'rejected' | 'all'>(
+    'pending'
+  );
   const [searchQuery, setSearchQuery] = useState('');
 
   // Selected for review
   const [selectedApp, setSelectedApp] = useState<PractitionerApplication | null>(null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [activeDocumentPreview, setActiveDocumentPreview] = useState<CredentialDocument | null>(null);
+  const [activeDocumentPreview, setActiveDocumentPreview] = useState<CredentialDocument | null>(
+    null
+  );
 
   // Rejection modal
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
@@ -100,7 +97,10 @@ export default function VerificationPage() {
         },
       });
 
-      success('Practitioner Approved', `${selectedApp.fullName} has been granted clinical practice rights.`);
+      success(
+        'Practitioner Approved',
+        `${selectedApp.fullName} has been granted clinical practice rights.`
+      );
       setReviewModalOpen(false);
     } catch {
       toastError('Error', 'Failed to approve application');
@@ -147,7 +147,10 @@ export default function VerificationPage() {
         },
       });
 
-      info('Application Rejected', `The practitioner application for ${selectedApp.fullName} was rejected.`);
+      info(
+        'Application Rejected',
+        `The practitioner application for ${selectedApp.fullName} was rejected.`
+      );
       setRejectModalOpen(false);
       setReviewModalOpen(false);
       setRejectReason('');
@@ -181,7 +184,8 @@ export default function VerificationPage() {
               Practitioner Credential Verification
             </h2>
             <p className="text-xs text-[#737781] mt-0.5">
-              Review Pakistan Medical & Dental Council (PMDC) credentials, degrees, and hospital affiliations
+              Review Pakistan Medical & Dental Council (PMDC) credentials, degrees, and hospital
+              affiliations
             </p>
           </div>
 
@@ -210,8 +214,8 @@ export default function VerificationPage() {
                 {tab === 'pending'
                   ? `Pending (${pendingCount})`
                   : tab === 'all'
-                  ? 'All Applications'
-                  : tab}
+                    ? 'All Applications'
+                    : tab}
               </button>
             ))}
           </div>
@@ -239,7 +243,6 @@ export default function VerificationPage() {
             filteredApps.map((app) => {
               const isPending = app.status === 'pending';
               const isApproved = app.status === 'approved';
-              const isRejected = app.status === 'rejected';
 
               return (
                 <div
@@ -249,11 +252,7 @@ export default function VerificationPage() {
                   {/* Left-hand vertical clinical accent bar */}
                   <div
                     className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl ${
-                      isApproved
-                        ? 'bg-[#00875A]'
-                        : isPending
-                        ? 'bg-[#00A896]'
-                        : 'bg-[#BA1A1A]'
+                      isApproved ? 'bg-[#00875A]' : isPending ? 'bg-[#00A896]' : 'bg-[#BA1A1A]'
                     }`}
                   />
 
@@ -271,9 +270,7 @@ export default function VerificationPage() {
                       </div>
 
                       <Badge
-                        variant={
-                          isApproved ? 'verified' : isPending ? 'pending' : 'rejected'
-                        }
+                        variant={isApproved ? 'verified' : isPending ? 'pending' : 'rejected'}
                         size="sm"
                         dot
                       >
@@ -286,11 +283,15 @@ export default function VerificationPage() {
                       <div className="p-2.5 rounded-lg bg-[#F7F9FF] border border-slate-200/70 space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="text-[#737781]">PMDC License:</span>
-                          <span className="font-mono font-bold text-[#002654]">{app.pmdcNumber}</span>
+                          <span className="font-mono font-bold text-[#002654]">
+                            {app.pmdcNumber}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-[#737781]">Experience:</span>
-                          <span className="font-semibold text-[#121D27]">{app.yearsOfExperience} Years</span>
+                          <span className="font-semibold text-[#121D27]">
+                            {app.yearsOfExperience} Years
+                          </span>
                         </div>
                       </div>
 
@@ -341,8 +342,7 @@ export default function VerificationPage() {
             footer={
               <div className="flex items-center justify-between w-full">
                 <div className="text-xs text-[#737781]">
-                  Status:{' '}
-                  <strong className="text-[#002654] uppercase">{selectedApp.status}</strong>
+                  Status: <strong className="text-[#002654] uppercase">{selectedApp.status}</strong>
                 </div>
 
                 <div className="flex items-center gap-2.5">
@@ -475,7 +475,6 @@ export default function VerificationPage() {
                   </div>
 
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={activeDocumentPreview.fileUrl}
                       alt={activeDocumentPreview.name}
@@ -524,7 +523,8 @@ export default function VerificationPage() {
               <AlertTriangle className="w-5 h-5 shrink-0" />
               <p>
                 Rejecting this application will send a formal notification to the doctor with your
-                rejection explanation and keep their account restricted from practicing on HealthDastaan.
+                rejection explanation and keep their account restricted from practicing on
+                HealthDastaan.
               </p>
             </div>
 
@@ -534,12 +534,14 @@ export default function VerificationPage() {
               </label>
               <select
                 value={rejectCategory}
-                onChange={(e) => setRejectCategory(e.target.value as any)}
+                onChange={(e) => setRejectCategory(e.target.value as typeof rejectCategory)}
                 className="w-full h-10 px-3 text-xs rounded-lg border border-slate-300 focus:outline-none focus:border-[#00A896]"
               >
                 <option value="invalid_pmdc">Invalid or Unregistered PMDC License Number</option>
                 <option value="expired_credentials">Expired Medical License or Registration</option>
-                <option value="name_mismatch">Name Mismatch between CNIC and PMDC Certificate</option>
+                <option value="name_mismatch">
+                  Name Mismatch between CNIC and PMDC Certificate
+                </option>
                 <option value="forged_document">Tampered or Fraudulent Document Upload</option>
                 <option value="other">Other Credential Discrepancy</option>
               </select>
