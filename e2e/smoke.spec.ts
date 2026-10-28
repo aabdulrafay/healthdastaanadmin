@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-const TEST_ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || 'superadmin@healthdastaan.com';
-const TEST_ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || 'ChangeMe@HealthDastaan2026!';
+const TEST_ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || '';
+const TEST_ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || '';
 
 test.describe('HealthDastaan Admin Smoke Suite', () => {
   test('API health check endpoint returns 200 OK', async ({ request }) => {
@@ -16,8 +16,8 @@ test.describe('HealthDastaan Admin Smoke Suite', () => {
     await page.goto('/login');
 
     await expect(page).toHaveTitle(/HealthDastaan Admin/i);
-    await expect(page.getByText('HealthDastaan', { exact: true })).toBeVisible();
-    await expect(page.getByText('Clinical Administration Portal')).toBeVisible();
+    await expect(page.getByAltText('HealthDastaan')).toBeVisible();
+    await expect(page.getByText('System Administration Portal')).toBeVisible();
 
     await expect(page.getByLabel(/Administrator Email/i)).toBeVisible();
     await expect(page.getByLabel(/Security Password/i)).toBeVisible();
@@ -34,6 +34,10 @@ test.describe('HealthDastaan Admin Smoke Suite', () => {
   });
 
   test('Authenticates and loads the clinical command dashboard shell', async ({ page }) => {
+    test.skip(
+      !TEST_ADMIN_EMAIL || !TEST_ADMIN_PASSWORD,
+      'Skipping authenticated test: credentials not set'
+    );
     await page.goto('/login');
 
     // Fill development test admin credentials
@@ -55,6 +59,10 @@ test.describe('HealthDastaan Admin Smoke Suite', () => {
   });
 
   test('Navigation to modules renders appropriate views', async ({ page }) => {
+    test.skip(
+      !TEST_ADMIN_EMAIL || !TEST_ADMIN_PASSWORD,
+      'Skipping authenticated test: credentials not set'
+    );
     // Login first
     await page.goto('/login');
     await page.getByLabel(/Administrator Email/i).fill(TEST_ADMIN_EMAIL);

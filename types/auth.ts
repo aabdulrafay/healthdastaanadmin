@@ -1,6 +1,14 @@
 export type AdminRole =
   'super_admin' | 'verification_admin' | 'support_admin' | 'compliance_admin' | 'api_control_admin';
 
+export interface UserOrganizationMembership {
+  id: string;
+  name: string;
+  typeCode: 'hospital' | 'clinic' | 'laboratory' | 'other';
+  role: 'owner' | 'admin' | 'staff';
+  status: 'pending' | 'verified' | 'rejected' | 'suspended';
+}
+
 export interface AdminUser {
   id: string;
   name: string;
@@ -9,6 +17,7 @@ export interface AdminUser {
   additionalRoles?: AdminRole[];
   department?: string;
   avatarUrl?: string;
+  organizations?: UserOrganizationMembership[];
   mustChangePassword?: boolean;
   createdAt: string;
   lastLoginAt?: string;

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,8 +14,8 @@ import {
   Sliders,
   ShieldCheck,
   LockKeyhole,
+  Building2,
   LogOut,
-  Activity,
   X,
 } from 'lucide-react';
 
@@ -22,9 +23,15 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   pendingVerificationsCount?: number;
+  pendingOrganizationsCount?: number;
 }
 
-export function Sidebar({ isOpen, onClose, pendingVerificationsCount = 2 }: SidebarProps) {
+export function Sidebar({
+  isOpen,
+  onClose,
+  pendingVerificationsCount = 0,
+  pendingOrganizationsCount = 0,
+}: SidebarProps) {
   const pathname = usePathname();
   const { user, logout, isSuperAdmin } = useAuth();
 
@@ -42,6 +49,8 @@ export function Sidebar({ isOpen, onClose, pendingVerificationsCount = 2 }: Side
         return <ShieldCheck className="w-5 h-5" />;
       case 'LockKeyhole':
         return <LockKeyhole className="w-5 h-5" />;
+      case 'Building2':
+        return <Building2 className="w-5 h-5" />;
       default:
         return <LayoutDashboard className="w-5 h-5" />;
     }
@@ -74,23 +83,19 @@ export function Sidebar({ isOpen, onClose, pendingVerificationsCount = 2 }: Side
         } border-r border-[#1F3D6B] shadow-xl`}
       >
         {/* Brand Header */}
-        <div className="h-18 px-6 flex items-center justify-between border-b border-[#1F3D6B]/70 bg-[#071E3D]/50">
-          <Link href="/" className="flex items-center gap-3 group">
-            {/* HealthDastaan Dual-Ribbon Brand Mark */}
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00A896] to-[#0ED2B0] flex items-center justify-center shadow-lg shadow-[#00A896]/25 group-hover:scale-105 transition-transform">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-base tracking-tight text-white">
-                  HealthDastaan
-                </span>
-                <span className="text-[10px] font-bold tracking-widest px-1.5 py-0.5 rounded bg-[#00A896]/25 text-[#0ED2B0] border border-[#00A896]/30">
-                  ADMIN
-                </span>
-              </div>
-              <p className="text-[11px] text-[#8DA8DE]">Clinical Operations</p>
-            </div>
+        <div className="h-18 px-5 flex items-center justify-between border-b border-[#1F3D6B]/70 bg-[#071E3D]/50">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <Image
+              src="/logo-white.png"
+              alt="HealthDastaan"
+              width={140}
+              height={89}
+              className="h-9 w-auto object-contain group-hover:scale-105 transition-transform"
+              priority
+            />
+            <span className="text-[10px] font-bold tracking-widest px-1.5 py-0.5 rounded bg-[#00A896]/25 text-[#0ED2B0] border border-[#00A896]/30">
+              ADMIN
+            </span>
           </Link>
 
           <button
@@ -115,7 +120,11 @@ export function Sidebar({ isOpen, onClose, pendingVerificationsCount = 2 }: Side
                 : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
             const badgeCount =
-              item.badgeCountKey === 'pendingVerifications' ? pendingVerificationsCount : null;
+              item.badgeCountKey === 'pendingVerifications'
+                ? pendingVerificationsCount
+                : item.badgeCountKey === 'pendingOrganizations'
+                  ? pendingOrganizationsCount
+                  : null;
 
             return (
               <Link

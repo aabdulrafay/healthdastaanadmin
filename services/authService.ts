@@ -1,6 +1,5 @@
 import { storage } from '@/lib/storage';
 import { AdminRole, AdminUser, AuthResponse, LoginCredentials } from '@/types/auth';
-import { DEFAULT_SUPERADMIN } from '@/lib/constants';
 import { apiClient, ApiError } from './apiClient';
 
 const VALID_ADMIN_ROLES: AdminRole[] = [
@@ -27,6 +26,7 @@ interface BackendAuthResponse {
     department?: string;
     createdAt?: string;
     mustChangePassword?: boolean;
+    organizations?: AdminUser['organizations'];
   };
 }
 
@@ -34,53 +34,7 @@ export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const emailLower = credentials.email.trim().toLowerCase();
 
-    // Fast-path client rejection check for standard patient accounts
-    if (
-      emailLower.includes('patient') ||
-      emailLower.includes('doctor') ||
-      emailLower === 'sana.tariq@gmail.com'
-    ) {
-      throw new Error(
-        'Access Denied: Standard patient and practitioner accounts cannot access the Clinical Operations Admin Portal.'
-      );
-    }
-
-    // Automated test harness fast-path (prevents remote network latency during Vitest)
-    if (process.env.NODE_ENV === 'test' && emailLower === DEFAULT_SUPERADMIN.email.toLowerCase()) {
-      const superAdminUser: AdminUser = {
-        id: 'adm_001',
-        name: DEFAULT_SUPERADMIN.name,
-        email: DEFAULT_SUPERADMIN.email,
-        role: 'super_admin',
-        additionalRoles: [
-          'api_control_admin',
-          'compliance_admin',
-          'verification_admin',
-          'support_admin',
-        ],
-        department: 'Executive Governance & Engineering',
-        createdAt: '2025-08-01T00:00:00Z',
-        lastLoginAt: new Date().toISOString(),
-        mustChangePassword: false,
-      };
-
-      const response: AuthResponse = {
-        user: superAdminUser,
-        tokens: {
-          accessToken: `hd_adm_test_token_${Date.now()}`,
-          refreshToken: `hd_adm_test_refresh_${Date.now()}`,
-          expiresIn: 86400,
-        },
-        message: 'Super Admin authenticated for test harness.',
-      };
-
-      storage.setAccessToken(response.tokens.accessToken);
-      storage.setRefreshToken(response.tokens.refreshToken);
-      storage.setUser(response.user);
-      return response;
-    }
-
-    // 1. Direct authentication with the live HealthDastaan NestJS Backend API
+    // Direct authentication via the HealthDastaan Backend API
     try {
       const result = await apiClient<BackendAuthResponse>('/auth/login', {
         method: 'POST',
@@ -136,6 +90,7 @@ export const authService = {
           createdAt: result.user.createdAt || new Date().toISOString(),
           lastLoginAt: new Date().toISOString(),
           mustChangePassword: Boolean(result.user.mustChangePassword),
+          organizations: result.user.organizations,
         };
 
         const authResponse: AuthResponse = {

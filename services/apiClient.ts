@@ -19,6 +19,7 @@ export class ApiError extends Error {
 
 let isRefreshing = false;
 let refreshQueue: Array<(token: string | null) => void> = [];
+const inFlightGetRequests = new Map<string, Promise<unknown>>();
 
 async function parseResponseBody(response: Response): Promise<unknown> {
   try {
@@ -134,83 +135,108 @@ async function handleTokenRefresh(): Promise<string | null> {
 
 export async function apiClient<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { skipAuth = false, headers = {}, ...rest } = options;
+  const method = (rest.method || 'GET').toUpperCase();
+  const isGet = method === 'GET';
 
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-  const requestHeaders = new Headers(headers);
+  const token = !skipAuth ? storage.getAccessToken() : null;
+  const cacheKey = isGet ? `${token || 'anon'}:${url}` : null;
 
-  if (!requestHeaders.has('Content-Type') && !(rest.body instanceof FormData)) {
-    requestHeaders.set('Content-Type', 'application/json');
+  if (cacheKey && inFlightGetRequests.has(cacheKey)) {
+    return inFlightGetRequests.get(cacheKey) as Promise<T>;
   }
 
-  if (!skipAuth) {
-    const token = storage.getAccessToken();
-    if (token) {
+  const executeRequest = async (): Promise<T> => {
+    const requestHeaders = new Headers(headers);
+
+    if (!requestHeaders.has('Content-Type') && !(rest.body instanceof FormData)) {
+      requestHeaders.set('Content-Type', 'application/json');
+    }
+
+    if (!skipAuth && token) {
       requestHeaders.set('Authorization', `Bearer ${token}`);
     }
-  }
 
-  const executeFetch = async (targetUrl: string): Promise<Response> => {
-    return fetch(targetUrl, {
-      ...rest,
-      headers: requestHeaders,
-    });
-  };
+    const executeFetch = async (targetUrl: string): Promise<Response> => {
+      return fetch(targetUrl, {
+        ...rest,
+        headers: requestHeaders,
+      });
+    };
 
-  try {
-    let response: Response;
     try {
-      response = await executeFetch(url);
-    } catch (networkError) {
-      // If direct cross-origin access failed in browser, retry via same-origin proxy
-      if (typeof window !== 'undefined' && url.startsWith('http') && !url.includes('/api/proxy')) {
-        const proxyUrl = `/api/proxy${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-        response = await executeFetch(proxyUrl);
-      } else {
-        throw networkError;
+      let response: Response;
+      try {
+        response = await executeFetch(url);
+      } catch (networkError) {
+        // If direct cross-origin access failed in browser, retry via same-origin proxy
+        if (
+          typeof window !== 'undefined' &&
+          url.startsWith('http') &&
+          !url.includes('/api/proxy')
+        ) {
+          const proxyUrl = `/api/proxy${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+          response = await executeFetch(proxyUrl);
+        } else {
+          throw networkError;
+        }
       }
-    }
 
-    // 401 Unauthorized: Attempt token refresh
-    if (response.status === 401 && !skipAuth) {
-      const newToken = await handleTokenRefresh();
-      if (newToken) {
-        requestHeaders.set('Authorization', `Bearer ${newToken}`);
-        try {
-          response = await executeFetch(url);
-        } catch {
-          if (
-            typeof window !== 'undefined' &&
-            url.startsWith('http') &&
-            !url.includes('/api/proxy')
-          ) {
-            const proxyUrl = `/api/proxy${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-            response = await executeFetch(proxyUrl);
+      // 401 Unauthorized: Attempt token refresh
+      if (response.status === 401 && !skipAuth) {
+        const newToken = await handleTokenRefresh();
+        if (newToken) {
+          requestHeaders.set('Authorization', `Bearer ${newToken}`);
+          try {
+            response = await executeFetch(url);
+          } catch {
+            if (
+              typeof window !== 'undefined' &&
+              url.startsWith('http') &&
+              !url.includes('/api/proxy')
+            ) {
+              const proxyUrl = `/api/proxy${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+              response = await executeFetch(proxyUrl);
+            }
           }
         }
       }
-    }
 
-    const data = await parseResponseBody(response);
+      const data = await parseResponseBody(response);
 
-    if (!response.ok) {
-      let message = `HTTP ${response.status}: ${response.statusText}`;
-      if (typeof data === 'object' && data !== null) {
-        if ('message' in data) {
-          const msg = (data as { message: unknown }).message;
-          message = Array.isArray(msg) ? msg.join(', ') : String(msg);
-        } else if ('error' in data) {
-          message = String((data as { error: unknown }).error);
+      if (!response.ok) {
+        let message = `HTTP ${response.status}: ${response.statusText}`;
+        if (typeof data === 'object' && data !== null) {
+          if ('message' in data) {
+            const msg = (data as { message: unknown }).message;
+            message = Array.isArray(msg) ? msg.join(', ') : String(msg);
+          } else if ('error' in data) {
+            message = String((data as { error: unknown }).error);
+          }
+        } else if (typeof data === 'string' && data.trim()) {
+          message = data;
         }
-      } else if (typeof data === 'string' && data.trim()) {
-        message = data;
+
+        throw new ApiError(message, response.status, data);
       }
 
-      throw new ApiError(message, response.status, data);
+      return (data ?? {}) as T;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      throw new ApiError(error instanceof Error ? error.message : 'Unknown Network Error', 0);
     }
+  };
 
-    return (data ?? {}) as T;
-  } catch (error) {
-    if (error instanceof ApiError) throw error;
-    throw new ApiError(error instanceof Error ? error.message : 'Unknown Network Error', 0);
+  const promise = executeRequest();
+
+  if (cacheKey) {
+    inFlightGetRequests.set(cacheKey, promise);
+    promise
+      .catch(() => {})
+      .finally(() => {
+        inFlightGetRequests.delete(cacheKey);
+      });
   }
+
+  return promise;
 }

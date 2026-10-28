@@ -1,17 +1,17 @@
 import { AdminRole } from '@/types/auth';
 
 export const API_BASE_URL =
+  typeof window !== 'undefined'
+    ? '/api/proxy'
+    : process.env.INTERNAL_API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      'https://api.healthdastaan.com/v1';
+
+export const INTERNAL_API_BASE_URL =
+  process.env.INTERNAL_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== 'undefined' ? '/api/proxy' : 'https://api.healthdastaan.com/v1');
-
-export const INTERNAL_API_BASE_URL = process.env.INTERNAL_API_BASE_URL || API_BASE_URL;
-
-export const DEFAULT_SUPERADMIN = {
-  email: 'superadmin@healthdastaan.com',
-  name: 'HealthDastaan Super Admin',
-  role: 'super_admin' as AdminRole,
-};
+  'https://api.healthdastaan.com/v1';
 
 export interface RoleConfig {
   label: string;
@@ -26,13 +26,21 @@ export const ROLE_CONFIGS: Record<AdminRole, RoleConfig> = {
     badgeColor: 'bg-[#002654] text-white border-[#0B3C78]',
     description:
       'Unrestricted enterprise control across all clinical systems, admins, and services.',
-    accessibleRoutes: ['/', '/users', '/verification', '/feature-flags', '/audit-logs', '/admins'],
+    accessibleRoutes: [
+      '/',
+      '/users',
+      '/verification',
+      '/organizations',
+      '/feature-flags',
+      '/audit-logs',
+      '/admins',
+    ],
   },
   verification_admin: {
     label: 'Verification Admin',
     badgeColor: 'bg-[#006B5F]/15 text-[#006B5F] border-[#006B5F]/30',
     description: 'Manages doctor credentials, PMDC validity, and clinic licensing reviews.',
-    accessibleRoutes: ['/', '/verification', '/users'],
+    accessibleRoutes: ['/', '/verification', '/organizations', '/users'],
   },
   support_admin: {
     label: 'Support Admin',
@@ -59,7 +67,7 @@ export interface NavItem {
   href: string;
   iconName: string;
   allowedRoles: AdminRole[];
-  badgeCountKey?: 'pendingVerifications' | 'criticalAlerts';
+  badgeCountKey?: 'pendingVerifications' | 'pendingOrganizations' | 'criticalAlerts';
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -87,6 +95,13 @@ export const NAV_ITEMS: NavItem[] = [
     iconName: 'Stethoscope',
     allowedRoles: ['super_admin', 'verification_admin'],
     badgeCountKey: 'pendingVerifications',
+  },
+  {
+    name: 'Organizations',
+    href: '/organizations',
+    iconName: 'Building2',
+    allowedRoles: ['super_admin', 'verification_admin'],
+    badgeCountKey: 'pendingOrganizations',
   },
   {
     name: 'Feature Flags & APIs',

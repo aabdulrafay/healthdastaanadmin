@@ -36,7 +36,7 @@ describe('LoginPage Component', () => {
     render(<LoginPage />);
 
     expect(screen.getByText('HealthDastaan')).toBeInTheDocument();
-    expect(screen.getByText('Clinical Administration Portal')).toBeInTheDocument();
+    expect(screen.getByText('System Administration Portal')).toBeInTheDocument();
     expect(screen.getByLabelText(/Administrator Email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Security Password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Sign In to Console/i })).toBeInTheDocument();

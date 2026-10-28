@@ -10,10 +10,12 @@ import { userService } from '@/services/userService';
 import { verificationService } from '@/services/verificationService';
 import { featureFlagService } from '@/services/featureFlagService';
 import { auditService } from '@/services/auditService';
+import { organizationService } from '@/services/organizationService';
 import { User } from '@/types/user';
 import { PractitionerApplication } from '@/types/verification';
 import { FeatureFlag } from '@/types/featureFlag';
 import { AuditLog } from '@/types/audit';
+import { Organization } from '@/types/organization';
 import { useAuth } from '@/hooks/useAuth';
 import { formatTimeAgo } from '@/lib/utils';
 import {
@@ -25,12 +27,14 @@ import {
   Activity,
   Server,
   Clock,
+  Building2,
 } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [verifications, setVerifications] = useState<PractitionerApplication[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [_loading, setLoading] = useState(true);
@@ -38,17 +42,19 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const [usersRes, verifsRes, flagsRes, auditRes] = await Promise.all([
+        const [usersRes, verifsRes, flagsRes, auditRes, orgsRes] = await Promise.all([
           userService.getUsers(),
           verificationService.getApplications(),
           featureFlagService.getFeatureFlags(),
           auditService.getAuditLogs({ limit: 6 }),
+          organizationService.getOrganizations(),
         ]);
 
         setUsers(usersRes.users);
         setVerifications(verifsRes);
         setFlags(flagsRes);
         setAuditLogs(auditRes.logs);
+        setOrganizations(orgsRes.organizations);
       } catch (err) {
         console.error('Failed to load dashboard data', err);
       } finally {
@@ -56,7 +62,7 @@ export default function DashboardPage() {
       }
     }
 
-    fetchDashboardData();
+    void fetchDashboardData();
   }, []);
 
   // Compute metrics
@@ -65,13 +71,18 @@ export default function DashboardPage() {
   const doctorCount = users.filter((u) => u.role === 'practitioner' || u.role === 'both').length;
   const dualRoleCount = users.filter((u) => u.role === 'both').length;
   const pendingVerifications = verifications.filter((v) => v.status === 'pending');
+  const pendingOrgs = organizations.filter((o) => o.status === 'pending');
+  const verifiedOrgs = organizations.filter((o) => o.status === 'verified');
   const blockedCount = users.filter(
     (u) => u.status === 'blocked' || u.status === 'suspended'
   ).length;
   const activeFlagsCount = flags.filter((f) => f.isEnabled).length;
 
   return (
-    <AdminLayout>
+    <AdminLayout
+      pendingVerificationsCount={pendingVerifications.length}
+      pendingOrganizationsCount={pendingOrgs.length}
+    >
       <div className="space-y-8">
         {/* Welcome & System Status Banner */}
         <div className="relative bg-gradient-to-r from-[#002654] via-[#0B3C78] to-[#006B5F] rounded-2xl p-6 sm:p-8 text-white shadow-xl shadow-[#002654]/10 overflow-hidden">
@@ -90,10 +101,14 @@ export default function DashboardPage() {
               <p className="text-xs sm:text-sm text-[#CADBF9] max-w-xl leading-relaxed">
                 Platform operations are running in high-availability mode. You have{' '}
                 <strong className="text-white underline font-semibold">
-                  {pendingVerifications.length} doctor credential application
+                  {pendingVerifications.length} clinician application
                   {pendingVerifications.length === 1 ? '' : 's'}
                 </strong>{' '}
-                awaiting PMDC verification and clinical review.
+                and{' '}
+                <strong className="text-white underline font-semibold">
+                  {pendingOrgs.length} healthcare organization{pendingOrgs.length === 1 ? '' : 's'}
+                </strong>{' '}
+                awaiting regulatory review.
               </p>
             </div>
 
@@ -105,7 +120,17 @@ export default function DashboardPage() {
                   className="bg-white text-[#002654] border-transparent hover:bg-[#EDF4FF] shadow-md font-bold"
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                 >
-                  Review Verifications ({pendingVerifications.length})
+                  Doctor Verifications ({pendingVerifications.length})
+                </Button>
+              </Link>
+              <Link href="/organizations">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  className="bg-[#00A896] text-white border-transparent hover:bg-[#008375] shadow-md font-bold"
+                  leftIcon={<Building2 className="w-4 h-4" />}
+                >
+                  Organizations ({pendingOrgs.length})
                 </Button>
               </Link>
               <Link href="/feature-flags">
@@ -123,14 +148,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Core Overview Metric Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <StatCard
             title="Total Registered Users"
             value={totalUsers}
             subtitle={`${doctorCount} Doctors • ${patientCount} Patients • ${dualRoleCount} Dual-Role`}
             icon={<Users className="w-6 h-6" />}
             accent="blue"
-            trend={{ value: '+14% this week', isPositive: true }}
+            trend={{ value: '+14% active', isPositive: true }}
           />
 
           <StatCard
@@ -139,7 +164,16 @@ export default function DashboardPage() {
             subtitle="Requires PMDC license check"
             icon={<Stethoscope className="w-6 h-6" />}
             accent="cyan"
-            trend={{ value: 'Urgent queue', isPositive: false }}
+            trend={{ value: `${pendingVerifications.length} in queue`, isPositive: false }}
+          />
+
+          <StatCard
+            title="Healthcare Facilities"
+            value={organizations.length}
+            subtitle={`${verifiedOrgs.length} Verified • ${pendingOrgs.length} Pending`}
+            icon={<Building2 className="w-6 h-6" />}
+            accent="emerald"
+            trend={{ value: 'Multi-tenant', isPositive: true }}
           />
 
           <StatCard
@@ -156,8 +190,8 @@ export default function DashboardPage() {
             value={`${activeFlagsCount} / ${flags.length}`}
             subtitle="API endpoints enabled"
             icon={<Sliders className="w-6 h-6" />}
-            accent="emerald"
-            trend={{ value: '1 maintenance flag', isPositive: true }}
+            accent="blue"
+            trend={{ value: 'Operational', isPositive: true }}
           />
         </div>
 

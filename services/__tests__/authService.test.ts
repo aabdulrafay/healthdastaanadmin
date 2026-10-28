@@ -1,31 +1,55 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { authService } from '../authService';
 import { storage } from '@/lib/storage';
-import { DEFAULT_SUPERADMIN } from '@/lib/constants';
+import * as apiClientModule from '../apiClient';
 
 describe('authService', () => {
   beforeEach(() => {
     storage.clearAll();
+    vi.restoreAllMocks();
   });
 
-  it('authenticates Super Admin in fallback/dev mode with valid credentials', async () => {
+  it('authenticates Super Admin with valid credentials via API', async () => {
+    vi.spyOn(apiClientModule, 'apiClient').mockResolvedValueOnce({
+      accessToken: 'test_access_token_123',
+      refreshToken: 'test_refresh_token_123',
+      user: {
+        id: 'adm_001',
+        fullName: 'Super Administrator',
+        email: 'admin@healthdastaan.com',
+        roles: ['super_admin'],
+        department: 'Operations',
+      },
+    });
+
     const res = await authService.login({
-      email: DEFAULT_SUPERADMIN.email,
-      password: 'mockTestPassword123!',
+      email: 'admin@healthdastaan.com',
+      password: 'validSecurePassword123!',
     });
 
     expect(res.user).toBeDefined();
     expect(res.user.role).toBe('super_admin');
-    expect(res.tokens.accessToken).toBeDefined();
-    expect(storage.getAccessToken()).toBe(res.tokens.accessToken);
+    expect(res.tokens.accessToken).toBe('test_access_token_123');
+    expect(storage.getAccessToken()).toBe('test_access_token_123');
     expect(storage.getUser()).toEqual(res.user);
   });
 
-  it('rejects authentication with Access Denied for non-admin roles', async () => {
+  it('rejects authentication with Access Denied for non-admin accounts', async () => {
+    vi.spyOn(apiClientModule, 'apiClient').mockResolvedValueOnce({
+      accessToken: 'patient_token_456',
+      refreshToken: 'patient_refresh_456',
+      user: {
+        id: 'usr_pat_001',
+        fullName: 'Standard Patient',
+        email: 'patient@example.com',
+        roles: ['patient'],
+      },
+    });
+
     await expect(
       authService.login({
-        email: 'sana.tariq@gmail.com',
-        password: 'anyPatientPassword',
+        email: 'patient@example.com',
+        password: 'patientPassword123!',
       })
     ).rejects.toThrow(/Access Denied/i);
 

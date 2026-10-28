@@ -26,8 +26,10 @@ interface RawBackendPractitionerUser {
     clinicAddress?: string;
     yearsOfExperience?: number;
     qualifications?: string[];
+    documents?: CredentialDocument[];
   } | null;
   fullName?: string;
+  documents?: CredentialDocument[];
 }
 
 interface BackendUserListResponse {
@@ -53,36 +55,16 @@ function mapUserToPractitionerApplication(
   const pmdcNumber = p?.registrationNumber || 'PMDC-PENDING';
   const specialization = p?.category || p?.specialization || 'General Practitioner';
   const medicalCouncilState = p?.medicalCouncilState || 'Pakistan Medical & Dental Council (PMDC)';
-  const clinicHospitalName = p?.clinicHospitalName || 'HealthDastaan Clinical Telehealth Network';
-  const clinicAddress = p?.clinicAddress || 'National Telehealth Gateway, Pakistan';
-  const yearsOfExperience = p?.yearsOfExperience ?? 5;
-  const qualifications = p?.qualifications || ['MBBS', 'Registered Practitioner'];
+  const clinicHospitalName = p?.clinicHospitalName || '';
+  const clinicAddress = p?.clinicAddress || '';
+  const yearsOfExperience = p?.yearsOfExperience ?? 0;
+  const qualifications = p?.qualifications || [];
 
-  const documents: CredentialDocument[] = [
-    {
-      id: `doc_pmdc_${user.id}`,
-      name: `PMDC_License_${pmdcNumber.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`,
-      type: 'pmdc_license',
-      fileUrl:
-        'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=80',
-      fileSizeBytes: 1420000,
-      uploadedAt: user.createdAt || new Date().toISOString(),
-      status: isApproved ? 'valid' : 'pending_review',
-      metadata: {
-        issuingAuthority: 'Pakistan Medical & Dental Council',
-      },
-    },
-    {
-      id: `doc_degree_${user.id}`,
-      name: 'MBBS_Degree_Official_Attestation.pdf',
-      type: 'mbbs_degree',
-      fileUrl:
-        'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=80',
-      fileSizeBytes: 2150000,
-      uploadedAt: user.createdAt || new Date().toISOString(),
-      status: isApproved ? 'valid' : 'pending_review',
-    },
-  ];
+  const documents: CredentialDocument[] = Array.isArray(p?.documents)
+    ? (p.documents as CredentialDocument[])
+    : Array.isArray(user?.documents)
+      ? (user.documents as CredentialDocument[])
+      : [];
 
   return {
     id: user.id,

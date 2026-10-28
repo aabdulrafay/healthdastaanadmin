@@ -15,7 +15,7 @@ describe('Sidebar Navigation Component', () => {
       user: {
         id: 'adm_01',
         name: 'Super Admin',
-        email: 'superadmin@healthdastaan.com',
+        email: 'test.admin@example.com',
         role: 'super_admin',
         createdAt: '2025-08-01',
       },

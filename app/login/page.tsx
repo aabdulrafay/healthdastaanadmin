@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Activity, Lock, Mail, Eye, EyeOff, ShieldAlert } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -61,18 +62,23 @@ export default function LoginPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 my-auto">
         {/* Brand Header */}
         <div className="text-center space-y-3 mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#002654] via-[#0b3c78] to-[#00a896] shadow-lg shadow-[#002654]/15 p-3">
-            <Activity className="w-full h-full text-white" />
+          <div className="flex justify-center mb-1">
+            <Image
+              src="/logo.png"
+              alt="HealthDastaan"
+              width={240}
+              height={153}
+              priority
+              className="h-16 sm:h-20 w-auto object-contain"
+            />
           </div>
 
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#002654] tracking-tight">
-              HealthDastaan
-            </h1>
+            <h1 className="sr-only">HealthDastaan</h1>
             <div className="inline-flex items-center gap-2 mt-2 px-3.5 py-1 rounded-full bg-[#edf4ff] border border-[#002654]/10">
               <span className="w-1.5 h-1.5 rounded-full bg-[#00875a]" />
               <span className="text-xs font-semibold text-[#002654] tracking-wide">
-                Clinical Administration Portal
+                System Administration Portal
               </span>
             </div>
           </div>

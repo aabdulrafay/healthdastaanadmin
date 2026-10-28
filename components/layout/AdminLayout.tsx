@@ -9,9 +9,15 @@ import { Loader2 } from 'lucide-react';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
+  pendingVerificationsCount?: number;
+  pendingOrganizationsCount?: number;
 }
 
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout({
+  children,
+  pendingVerificationsCount,
+  pendingOrganizationsCount,
+}: AdminLayoutProps) {
   const { user, isAuthenticated, isLoading, canAccessRoute } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
@@ -49,7 +55,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        pendingVerificationsCount={2}
+        pendingVerificationsCount={pendingVerificationsCount}
+        pendingOrganizationsCount={pendingOrganizationsCount}
       />
 
       {/* Main Content Area */}

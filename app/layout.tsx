@@ -12,11 +12,12 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'HealthDastaan Admin | Clinical Operations & System Governance',
+  title: 'HealthDastaan Admin | System Administration Portal',
   description:
-    'Enterprise Clinical Administration Portal for HealthDastaan - User Lifecycle, Practitioner Verification, Feature Flags & Audit Governance',
+    'Enterprise System Administration Portal for HealthDastaan - User Lifecycle, Practitioner Verification, Feature Flags & Audit Governance',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/logo.png',
+    apple: '/logo.png',
   },
 };
 
